@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -50,7 +51,7 @@
 
 body {
   font-family:
-    var(--font-geist-sans), Pretendard, 'Apple SD Gothic Neo',
+    Pretendard, var(--font-geist-sans), 'Apple SD Gothic Neo',
     'Noto Sans KR', Arial, Helvetica, sans-serif;
 }
 
@@ -154,13 +155,45 @@ body {
 }
 
 .form-backdrop-image {
-  object-position: center 34%;
-  transform: scale(1.08);
-  transform-origin: center 34%;
+  object-position: center 37%;
+  transform: scale(1.2);
+  transform-origin: center 37%;
 }
 
 .form-panel {
   animation: form-enter 240ms ease-out both;
+}
+
+.birth-form {
+  padding: 0 21px max(14px, env(safe-area-inset-bottom));
+}
+
+.birth-form-fields {
+  display: grid;
+  gap: clamp(1.08rem, 5.2dvh, 1.92rem);
+}
+
+.form-field {
+  border-bottom: 1px solid rgb(255 255 255 / 0.46);
+  padding-bottom: clamp(0.78rem, 2.2dvh, 1.04rem);
+}
+
+.form-field-header {
+  display: flex;
+  min-height: clamp(1.72rem, 4dvh, 2.18rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: clamp(0.78rem, 2.2dvh, 1.08rem);
+}
+
+.form-field-label,
+.gender-legend {
+  color: white;
+  font-size: clamp(1.32rem, 5.6vw, 1.7rem);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 .form-line-input {
@@ -169,14 +202,89 @@ body {
   border: 0;
   outline: 0;
   color: rgb(255 255 255 / 0.95);
-  font-size: 1.28rem;
+  font-size: clamp(1.32rem, 5.3vw, 1.62rem);
   line-height: 1.2;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: 0;
 }
 
 .form-line-input::placeholder {
-  color: rgb(255 255 255 / 0.55);
+  color: rgb(255 255 255 / 0.58);
+}
+
+.choice-button {
+  display: inline-flex;
+  min-height: 2.3rem;
+  align-items: center;
+  gap: 0.42rem;
+  color: rgb(255 255 255 / 0.62);
+  font-size: clamp(1.1rem, 4.9vw, 1.48rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.choice-button[aria-pressed='true'] {
+  color: white;
+}
+
+.choice-icon {
+  display: grid;
+  width: clamp(1.45rem, 6.2vw, 1.95rem);
+  height: clamp(1.45rem, 6.2vw, 1.95rem);
+  place-items: center;
+  border-radius: 999px;
+}
+
+.choice-icon-svg {
+  width: 75%;
+  height: 75%;
+  stroke-width: 3;
+}
+
+.gender-legend {
+  margin-bottom: clamp(1.2rem, 3.1dvh, 1.58rem);
+}
+
+.gender-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.78rem;
+}
+
+.gender-button {
+  height: clamp(3.45rem, 8.3dvh, 4.75rem);
+  border: 1.5px solid rgb(255 255 255 / 0.9);
+  border-radius: 11px;
+  background: rgb(0 0 0 / 0.2);
+  color: rgb(255 255 255 / 0.78);
+  font-size: clamp(1.28rem, 5.2vw, 1.72rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(10px);
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.gender-button[aria-pressed='true'] {
+  border-color: white;
+  background: white;
+  color: #10192f;
+  box-shadow: 0 0 26px rgb(158 190 255 / 0.32);
+}
+
+.next-button {
+  height: clamp(4rem, 8.8dvh, 5.28rem);
+  border-radius: 10px;
+  font-size: clamp(1.52rem, 5.7vw, 1.98rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 @keyframes form-enter {
@@ -193,14 +301,54 @@ body {
 
 @media (max-height: 720px) {
   .form-panel {
-    padding-top: 4.25rem;
+    padding-top: 4rem;
   }
 
-  .form-panel > div {
-    row-gap: 0.875rem;
+  .birth-form-fields {
+    gap: 0.92rem;
+  }
+
+  .form-field {
+    padding-bottom: 0.72rem;
+  }
+
+  .form-field-header {
+    min-height: 1.55rem;
+    margin-bottom: 0.68rem;
+  }
+
+  .form-field-label,
+  .gender-legend {
+    font-size: 1.16rem;
   }
 
   .form-line-input {
+    font-size: 1.16rem;
+  }
+
+  .choice-button {
+    min-height: 2rem;
+    font-size: 0.94rem;
+  }
+
+  .choice-icon {
+    width: 1.28rem;
+    height: 1.28rem;
+  }
+
+  .gender-legend {
+    margin-bottom: 0.84rem;
+  }
+
+  .gender-button {
+    height: 3.1rem;
+    border-radius: 8px;
+    font-size: 1.04rem;
+  }
+
+  .next-button {
+    height: 3.35rem;
+    border-radius: 8px;
     font-size: 1.12rem;
   }
 }

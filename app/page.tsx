@@ -166,9 +166,9 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
 
       <form
         onSubmit={(event) => event.preventDefault()}
-        className="form-panel relative z-10 flex min-h-dvh flex-col justify-end px-6 pb-[max(14px,env(safe-area-inset-bottom))] pt-20 sm:min-h-[860px]"
+        className="birth-form form-panel relative z-10 flex min-h-dvh flex-col justify-end sm:min-h-[860px]"
       >
-        <div className="space-y-5">
+        <div className="birth-form-fields">
           <FieldBlock label="이름">
             <input
               value={name}
@@ -228,10 +228,8 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
           </FieldBlock>
 
           <fieldset>
-            <legend className="mb-4 text-[1.25rem] font-extrabold text-white">
-              성별
-            </legend>
-            <div className="grid grid-cols-2 gap-3">
+            <legend className="gender-legend">성별</legend>
+            <div className="gender-grid">
               <GenderButton
                 active={gender === 'male'}
                 label="남성"
@@ -248,7 +246,7 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
           <Button
             type="button"
             disabled={!canContinue}
-            className="h-14 w-full rounded-[8px] bg-white/24 text-[1.25rem] font-extrabold text-white/45 shadow-none disabled:opacity-100 enabled:bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] enabled:text-[#111b34] enabled:hover:brightness-105"
+            className="next-button w-full bg-white/24 font-extrabold text-white/45 shadow-none disabled:opacity-100 enabled:bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] enabled:text-[#111b34] enabled:hover:brightness-105"
           >
             다음으로
           </Button>
@@ -268,11 +266,9 @@ function FieldBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="block border-b border-white/40 pb-3">
-      <span className="mb-3 flex min-h-7 items-center justify-between gap-3">
-        <span className="text-[1.25rem] font-extrabold text-white">
-          {label}
-        </span>
+    <div className="form-field">
+      <span className="form-field-header">
+        <span className="form-field-label">{label}</span>
         {action}
       </span>
       {children}
@@ -296,14 +292,14 @@ function ChoiceButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="inline-flex min-h-9 items-center gap-1.5 text-[1rem] font-extrabold text-white/62 transition aria-pressed:text-white"
+      className="choice-button"
     >
       <span
-        className={`grid size-6 place-items-center rounded-full ${
+        className={`choice-icon ${
           active ? 'bg-white text-[#172039]' : 'text-white/58'
         }`}
       >
-        <Icon className="size-[1.05rem] stroke-[3]" />
+        <Icon className="choice-icon-svg" />
       </span>
       {label}
     </button>
@@ -324,7 +320,7 @@ function GenderButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="h-14 rounded-[8px] border border-white/85 bg-black/18 text-[1.18rem] font-extrabold text-white/78 backdrop-blur-md transition hover:bg-white/10 aria-pressed:border-white aria-pressed:bg-white aria-pressed:text-[#10192f] aria-pressed:shadow-[0_0_26px_rgb(158_190_255/32%)]"
+      className="gender-button"
     >
       {label}
     </button>
