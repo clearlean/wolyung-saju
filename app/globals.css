@@ -147,13 +147,29 @@ body {
   pointer-events: none;
 }
 
+.hero-portrait {
+  object-position: center 34%;
+  transform: scale(1.12);
+  transform-origin: center 34%;
+}
+
+.form-backdrop-image {
+  object-position: center 34%;
+  transform: scale(1.08);
+  transform-origin: center 34%;
+}
+
+.form-panel {
+  animation: form-enter 240ms ease-out both;
+}
+
 .form-line-input {
   width: 100%;
   background: transparent;
   border: 0;
   outline: 0;
   color: rgb(255 255 255 / 0.95);
-  font-size: 1.5rem;
+  font-size: 1.28rem;
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: 0;
@@ -161,4 +177,30 @@ body {
 
 .form-line-input::placeholder {
   color: rgb(255 255 255 / 0.55);
+}
+
+@keyframes form-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-height: 720px) {
+  .form-panel {
+    padding-top: 4.25rem;
+  }
+
+  .form-panel > div {
+    row-gap: 0.875rem;
+  }
+
+  .form-line-input {
+    font-size: 1.12rem;
+  }
 }

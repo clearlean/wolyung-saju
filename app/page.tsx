@@ -40,7 +40,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
       <img
         src="/moon-counselor.png"
         alt="푸른 달빛 아래 서 있는 월영당 사주 상담가"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="hero-portrait absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(5_9_22/10%)_0%,rgb(6_10_28/20%)_38%,rgb(5_8_20/78%)_73%,rgb(4_7_18/96%)_100%)]" />
       <div className="absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_18%_4%,rgb(219_235_255/58%),transparent_21%),linear-gradient(180deg,rgb(2_5_19/35%),transparent)]" />
@@ -66,7 +66,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
       </header>
 
       <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24 sm:min-h-[860px]">
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
             월영아씨
           </p>
@@ -151,26 +151,24 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
         src="/moon-counselor.png"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-[10px]"
+        className="form-backdrop-image absolute inset-0 h-full w-full object-cover blur-[6px]"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(13_20_36/90%)_0%,rgb(15_22_39/72%)_34%,rgb(12_16_27/86%)_72%,rgb(4_5_9/96%)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(13_20_36/86%)_0%,rgb(15_22_39/66%)_34%,rgb(12_16_27/84%)_72%,rgb(4_5_9/96%)_100%)]" />
 
       <button
         type="button"
         onClick={onBack}
         aria-label="첫 화면으로 돌아가기"
-        className="absolute left-5 top-7 z-10 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
+        className="absolute left-4 top-5 z-10 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
       >
-        <ChevronLeft className="size-10 stroke-[2.4]" />
+        <ChevronLeft className="size-9 stroke-[2.5]" />
       </button>
 
       <form
         onSubmit={(event) => event.preventDefault()}
-        className="relative z-10 flex min-h-dvh flex-col px-7 pb-[max(18px,env(safe-area-inset-bottom))] pt-28 sm:min-h-[860px]"
+        className="form-panel relative z-10 flex min-h-dvh flex-col justify-end px-6 pb-[max(14px,env(safe-area-inset-bottom))] pt-20 sm:min-h-[860px]"
       >
-        <div className="flex-1" />
-
-        <div className="space-y-7">
+        <div className="space-y-5">
           <FieldBlock label="이름">
             <input
               value={name}
@@ -230,10 +228,10 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
           </FieldBlock>
 
           <fieldset>
-            <legend className="mb-6 text-[1.45rem] font-extrabold text-white">
+            <legend className="mb-4 text-[1.25rem] font-extrabold text-white">
               성별
             </legend>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <GenderButton
                 active={gender === 'male'}
                 label="남성"
@@ -250,7 +248,7 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
           <Button
             type="button"
             disabled={!canContinue}
-            className="h-16 w-full rounded-[8px] bg-white/24 text-[1.45rem] font-extrabold text-white/45 shadow-none disabled:opacity-100 enabled:bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] enabled:text-[#111b34] enabled:hover:brightness-105"
+            className="h-14 w-full rounded-[8px] bg-white/24 text-[1.25rem] font-extrabold text-white/45 shadow-none disabled:opacity-100 enabled:bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] enabled:text-[#111b34] enabled:hover:brightness-105"
           >
             다음으로
           </Button>
@@ -270,9 +268,9 @@ function FieldBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="block border-b border-white/40 pb-4">
-      <span className="mb-4 flex min-h-8 items-center justify-between gap-4">
-        <span className="text-[1.45rem] font-extrabold text-white">
+    <div className="block border-b border-white/40 pb-3">
+      <span className="mb-3 flex min-h-7 items-center justify-between gap-3">
+        <span className="text-[1.25rem] font-extrabold text-white">
           {label}
         </span>
         {action}
@@ -298,14 +296,14 @@ function ChoiceButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-[1.16rem] font-extrabold text-white/62 transition aria-pressed:text-white"
+      className="inline-flex min-h-9 items-center gap-1.5 text-[1rem] font-extrabold text-white/62 transition aria-pressed:text-white"
     >
       <span
-        className={`grid size-7 place-items-center rounded-full ${
+        className={`grid size-6 place-items-center rounded-full ${
           active ? 'bg-white text-[#172039]' : 'text-white/58'
         }`}
       >
-        <Icon className="size-5 stroke-[3]" />
+        <Icon className="size-[1.05rem] stroke-[3]" />
       </span>
       {label}
     </button>
@@ -326,7 +324,7 @@ function GenderButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="h-16 rounded-[8px] border border-white/85 bg-black/18 text-[1.35rem] font-extrabold text-white/78 backdrop-blur-md transition hover:bg-white/10 aria-pressed:border-white aria-pressed:bg-white aria-pressed:text-[#10192f]"
+      className="h-14 rounded-[8px] border border-white/85 bg-black/18 text-[1.18rem] font-extrabold text-white/78 backdrop-blur-md transition hover:bg-white/10 aria-pressed:border-white aria-pressed:bg-white aria-pressed:text-[#10192f] aria-pressed:shadow-[0_0_26px_rgb(158_190_255/32%)]"
     >
       {label}
     </button>
