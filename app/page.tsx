@@ -9,7 +9,7 @@ import {
   MoonStar,
   Sparkles,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -21,13 +21,49 @@ type Gender = 'male' | 'female' | '';
 export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  useEffect(() => {
+    const syncFormState = () => {
+      setIsFormOpen(window.location.hash === '#birth-info');
+    };
+
+    syncFormState();
+    window.addEventListener('popstate', syncFormState);
+    window.addEventListener('hashchange', syncFormState);
+
+    return () => {
+      window.removeEventListener('popstate', syncFormState);
+      window.removeEventListener('hashchange', syncFormState);
+    };
+  }, []);
+
+  const openForm = () => {
+    if (window.location.hash !== '#birth-info') {
+      window.history.pushState(
+        { wolyungStep: 'birth-info' },
+        '',
+        '#birth-info',
+      );
+    }
+
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    if (window.location.hash === '#birth-info') {
+      window.history.back();
+      return;
+    }
+
+    setIsFormOpen(false);
+  };
+
   return (
     <main className="min-h-dvh bg-[#090d1c] text-white">
       <section className="mx-auto min-h-dvh w-full max-w-[450px] overflow-hidden bg-[#0b1024] shadow-[0_0_70px_rgb(3_7_18/55%)] sm:rounded-[28px]">
         {isFormOpen ? (
-          <BirthInfoForm onBack={() => setIsFormOpen(false)} />
+          <BirthInfoForm onBack={closeForm} />
         ) : (
-          <HeroScreen onStart={() => setIsFormOpen(true)} />
+          <HeroScreen onStart={openForm} />
         )}
       </section>
     </main>
@@ -38,8 +74,8 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="relative min-h-dvh">
       <img
-        src="/moon-counselor.png"
-        alt="푸른 달빛 아래 서 있는 월영당 사주 상담가"
+        src="/astrology-woman.png"
+        alt="달빛 아래 점성술 차트를 살피는 월영당 상담가"
         className="hero-portrait absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(5_9_22/10%)_0%,rgb(6_10_28/20%)_38%,rgb(5_8_20/78%)_73%,rgb(4_7_18/96%)_100%)]" />
@@ -148,7 +184,7 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
   return (
     <div className="relative min-h-dvh overflow-hidden">
       <img
-        src="/moon-counselor.png"
+        src="/astrology-woman.png"
         alt=""
         aria-hidden="true"
         className="form-backdrop-image absolute inset-0 h-full w-full object-cover blur-[6px]"
