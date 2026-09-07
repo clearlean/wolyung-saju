@@ -146,3 +146,19 @@ body {
     radial-gradient(circle at 90% 42%, rgb(255 255 255 / 0.75) 0 1px, transparent 1.8px);
   pointer-events: none;
 }
+
+.form-line-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: rgb(255 255 255 / 0.95);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.form-line-input::placeholder {
+  color: rgb(255 255 255 / 0.55);
+}
