@@ -299,7 +299,7 @@ body {
   }
 }
 
-@media (max-height: 720px) {
+@media (max-height: 620px) {
   .form-panel {
     padding-top: 4rem;
   }

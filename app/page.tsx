@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <main className="min-h-dvh bg-[#090d1c] text-white">
-      <section className="mx-auto min-h-dvh w-full max-w-[450px] overflow-hidden bg-[#0b1024] shadow-[0_0_70px_rgb(3_7_18/55%)] sm:my-8 sm:min-h-[860px] sm:rounded-[28px]">
+      <section className="mx-auto min-h-dvh w-full max-w-[450px] overflow-hidden bg-[#0b1024] shadow-[0_0_70px_rgb(3_7_18/55%)] sm:rounded-[28px]">
         {isFormOpen ? (
           <BirthInfoForm onBack={() => setIsFormOpen(false)} />
         ) : (
@@ -36,7 +36,7 @@ export default function Home() {
 
 function HeroScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="relative min-h-dvh sm:min-h-[860px]">
+    <div className="relative min-h-dvh">
       <img
         src="/moon-counselor.png"
         alt="푸른 달빛 아래 서 있는 월영당 사주 상담가"
@@ -65,7 +65,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
         </Button>
       </header>
 
-      <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24 sm:min-h-[860px]">
+      <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24">
         <div className="mb-6 text-center">
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
             월영아씨
@@ -146,7 +146,7 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="relative min-h-dvh overflow-hidden sm:min-h-[860px]">
+    <div className="relative min-h-dvh overflow-hidden">
       <img
         src="/moon-counselor.png"
         alt=""
@@ -166,7 +166,7 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
 
       <form
         onSubmit={(event) => event.preventDefault()}
-        className="birth-form form-panel relative z-10 flex min-h-dvh flex-col justify-end sm:min-h-[860px]"
+        className="birth-form form-panel relative z-10 flex min-h-dvh flex-col justify-end"
       >
         <div className="birth-form-fields">
           <FieldBlock label="이름">
