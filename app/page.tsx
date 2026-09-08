@@ -50,7 +50,17 @@ export default function Home() {
 
   const closeForm = () => {
     if (window.location.hash === '#birth-info') {
-      window.history.back();
+      if (window.history.state?.wolyungStep === 'birth-info') {
+        window.history.back();
+      } else {
+        window.history.replaceState(
+          null,
+          '',
+          `${window.location.pathname}${window.location.search}`,
+        );
+        setIsFormOpen(false);
+      }
+
       return;
     }
 
