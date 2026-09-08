@@ -75,18 +75,7 @@ export default function Home() {
   };
 
   const handleBack = () => {
-    if (window.history.state?.wolyungStep) {
-      window.history.back();
-      return;
-    }
-
-    const currentIndex = formSteps.indexOf(screen as FormStep);
-    if (currentIndex > 0) {
-      goToScreen(formSteps[currentIndex - 1]);
-      return;
-    }
-
-    goToScreen('intro', 'replace');
+    goToScreen(getPreviousScreen(screen), 'replace');
   };
 
   return (
@@ -136,6 +125,20 @@ function getScreenIndex(screen: FlowScreen) {
   }
 
   return formSteps.indexOf(screen);
+}
+
+function getPreviousScreen(screen: FlowScreen): FlowScreen {
+  if (screen === 'loading' || screen === 'complete') {
+    return 'gender';
+  }
+
+  const currentIndex = formSteps.indexOf(screen as FormStep);
+
+  if (currentIndex > 0) {
+    return formSteps[currentIndex - 1];
+  }
+
+  return 'intro';
 }
 
 function HeroScreen({ onStart }: { onStart: () => void }) {
@@ -321,8 +324,8 @@ function BirthInfoForm({
       <button
         type="button"
         onClick={onBack}
-        aria-label="첫 화면으로 돌아가기"
-        className="absolute left-4 top-5 z-10 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
+        aria-label="이전 단계로 돌아가기"
+        className="absolute left-4 top-5 z-30 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
       >
         <ChevronLeft className="size-9 stroke-[2.5]" />
       </button>
