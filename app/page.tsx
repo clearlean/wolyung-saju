@@ -9,75 +9,133 @@ import {
   MoonStar,
   Sparkles,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
 const readingPoints = ['올해의 큰 흐름', '연애와 관계운', '일과 재물운'];
+const formSteps = ['name', 'birthday', 'birth-time', 'gender'] as const;
 
 type CalendarType = 'solar' | 'lunar';
 type Gender = 'male' | 'female' | '';
+type FormStep = (typeof formSteps)[number];
+type FlowScreen = 'intro' | FormStep | 'loading' | 'complete';
+type Direction = 'forward' | 'backward';
 
 export default function Home() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [screen, setScreen] = useState<FlowScreen>('intro');
+  const [direction, setDirection] = useState<Direction>('forward');
+  const previousScreen = useRef<FlowScreen>('intro');
 
   useEffect(() => {
-    const syncFormState = () => {
-      setIsFormOpen(window.location.hash === '#birth-info');
+    const syncScreenState = () => {
+      const nextScreen = getScreenFromHash();
+      setDirection(
+        getScreenIndex(nextScreen) < getScreenIndex(previousScreen.current)
+          ? 'backward'
+          : 'forward',
+      );
+      previousScreen.current = nextScreen;
+      setScreen(nextScreen);
     };
 
-    syncFormState();
-    window.addEventListener('popstate', syncFormState);
-    window.addEventListener('hashchange', syncFormState);
+    syncScreenState();
+    window.addEventListener('popstate', syncScreenState);
+    window.addEventListener('hashchange', syncScreenState);
 
     return () => {
-      window.removeEventListener('popstate', syncFormState);
-      window.removeEventListener('hashchange', syncFormState);
+      window.removeEventListener('popstate', syncScreenState);
+      window.removeEventListener('hashchange', syncScreenState);
     };
   }, []);
 
   const openForm = () => {
-    if (window.location.hash !== '#birth-info') {
-      window.history.pushState(
-        { wolyungStep: 'birth-info' },
-        '',
-        '#birth-info',
-      );
-    }
-
-    setIsFormOpen(true);
+    goToScreen('name');
   };
 
-  const closeForm = () => {
-    if (window.location.hash === '#birth-info') {
-      if (window.history.state?.wolyungStep === 'birth-info') {
-        window.history.back();
-      } else {
-        window.history.replaceState(
-          null,
-          '',
-          `${window.location.pathname}${window.location.search}`,
-        );
-        setIsFormOpen(false);
-      }
+  const goToScreen = (nextScreen: FlowScreen, mode: 'push' | 'replace' = 'push') => {
+    const nextDirection =
+      getScreenIndex(nextScreen) < getScreenIndex(previousScreen.current)
+        ? 'backward'
+        : 'forward';
+    const nextUrl =
+      nextScreen === 'intro'
+        ? `${window.location.pathname}${window.location.search}`
+        : `#_q=${nextScreen}`;
 
+    if (mode === 'replace') {
+      window.history.replaceState({ wolyungStep: nextScreen }, '', nextUrl);
+    } else {
+      window.history.pushState({ wolyungStep: nextScreen }, '', nextUrl);
+    }
+
+    previousScreen.current = nextScreen;
+    setDirection(nextDirection);
+    setScreen(nextScreen);
+  };
+
+  const handleBack = () => {
+    if (window.history.state?.wolyungStep) {
+      window.history.back();
       return;
     }
 
-    setIsFormOpen(false);
+    const currentIndex = formSteps.indexOf(screen as FormStep);
+    if (currentIndex > 0) {
+      goToScreen(formSteps[currentIndex - 1]);
+      return;
+    }
+
+    goToScreen('intro', 'replace');
   };
 
   return (
     <main className="min-h-dvh bg-[#090d1c] text-white">
       <section className="mx-auto min-h-dvh w-full max-w-[450px] overflow-hidden bg-[#0b1024] shadow-[0_0_70px_rgb(3_7_18/55%)] sm:rounded-[28px]">
-        {isFormOpen ? (
-          <BirthInfoForm onBack={closeForm} />
-        ) : (
+        {screen === 'intro' ? (
           <HeroScreen onStart={openForm} />
+        ) : (
+          <BirthInfoForm
+            direction={direction}
+            onBack={handleBack}
+            onReset={() => goToScreen('intro', 'replace')}
+            onStepChange={goToScreen}
+            screen={screen}
+          />
         )}
       </section>
     </main>
   );
+}
+
+function getScreenFromHash(): FlowScreen {
+  const hashValue = window.location.hash.replace('#_q=', '');
+
+  if (
+    formSteps.includes(hashValue as FormStep) ||
+    hashValue === 'loading' ||
+    hashValue === 'complete'
+  ) {
+    return hashValue as FlowScreen;
+  }
+
+  return 'intro';
+}
+
+function getScreenIndex(screen: FlowScreen) {
+  if (screen === 'intro') {
+    return -1;
+  }
+
+  if (screen === 'loading') {
+    return formSteps.length;
+  }
+
+  if (screen === 'complete') {
+    return formSteps.length + 1;
+  }
+
+  return formSteps.indexOf(screen);
 }
 
 function HeroScreen({ onStart }: { onStart: () => void }) {
@@ -164,24 +222,52 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
   );
 }
 
-function BirthInfoForm({ onBack }: { onBack: () => void }) {
+function BirthInfoForm({
+  direction,
+  onBack,
+  onReset,
+  onStepChange,
+  screen,
+}: {
+  direction: Direction;
+  onBack: () => void;
+  onReset: () => void;
+  onStepChange: (screen: FlowScreen, mode?: 'push' | 'replace') => void;
+  screen: Exclude<FlowScreen, 'intro'>;
+}) {
   const [name, setName] = useState('');
   const [birthday, setBirthday] = useState('');
   const [calendarType, setCalendarType] = useState<CalendarType>('solar');
   const [birthTime, setBirthTime] = useState('');
   const [unknownTime, setUnknownTime] = useState(false);
   const [gender, setGender] = useState<Gender>('');
+  const [error, setError] = useState<{
+    message: string;
+    screen: Exclude<FlowScreen, 'intro'>;
+  } | null>(null);
 
-  const canContinue =
-    name.trim().length > 0 &&
-    birthday.length === 10 &&
-    (unknownTime || birthTime.length === 5) &&
-    gender !== '';
+  const currentStepIndex = formSteps.indexOf(screen as FormStep);
+  const progress = currentStepIndex >= 0 ? currentStepIndex + 1 : formSteps.length;
+  const progressWidth = `${(progress / formSteps.length) * 100}%`;
+  const currentError = error?.screen === screen ? error.message : '';
+
+  useEffect(() => {
+    if (screen !== 'loading') {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      onStepChange('complete', 'replace');
+    }, 1300);
+
+    return () => window.clearTimeout(timer);
+  }, [onStepChange, screen]);
 
   const handleBirthdayChange = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 8);
     const parts = [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)];
     setBirthday(parts.filter(Boolean).join('.'));
+    setError(null);
   };
 
   const handleBirthTimeChange = (value: string) => {
@@ -189,6 +275,37 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
     const nextValue =
       digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
     setBirthTime(nextValue);
+    setError(null);
+  };
+
+  const validateCurrentStep = () => {
+    if (screen === 'name') {
+      return name.trim().length > 0;
+    }
+
+    if (screen === 'birthday') {
+      return birthday.length === 10;
+    }
+
+    if (screen === 'birth-time') {
+      return unknownTime || birthTime.length === 5;
+    }
+
+    if (screen === 'gender') {
+      return gender !== '';
+    }
+
+    return true;
+  };
+
+  const handleNext = () => {
+    if (!validateCurrentStep()) {
+      setError({ message: getErrorMessage(screen), screen });
+      return;
+    }
+
+    const nextStep = formSteps[currentStepIndex + 1];
+    onStepChange(nextStep ?? 'loading');
   };
 
   return (
@@ -212,94 +329,183 @@ function BirthInfoForm({ onBack }: { onBack: () => void }) {
 
       <form
         onSubmit={(event) => event.preventDefault()}
-        className="birth-form form-panel relative z-10 flex min-h-dvh flex-col justify-end"
+        className="birth-form relative z-10 flex min-h-dvh flex-col"
       >
-        <div className="birth-form-fields">
-          <FieldBlock label="이름">
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value.slice(0, 4))}
-              placeholder="이름을 입력해 주세요. (최대 4글자)"
-              aria-label="이름"
-              className="form-line-input"
-            />
-          </FieldBlock>
-
-          <FieldBlock
-            label="생년월일"
-            action={
-              <div className="flex items-center gap-5">
-                <ChoiceButton
-                  active={calendarType === 'solar'}
-                  label="양력"
-                  onClick={() => setCalendarType('solar')}
-                />
-                <ChoiceButton
-                  active={calendarType === 'lunar'}
-                  label="음력"
-                  onClick={() => setCalendarType('lunar')}
-                />
-              </div>
-            }
-          >
-            <input
-              inputMode="numeric"
-              value={birthday}
-              onChange={(event) => handleBirthdayChange(event.target.value)}
-              placeholder="0000.00.00"
-              aria-label="생년월일"
-              className="form-line-input"
-            />
-          </FieldBlock>
-
-          <FieldBlock
-            label="태어난 시간"
-            action={
-              <ChoiceButton
-                active={unknownTime}
-                label="시간 모름"
-                onClick={() => setUnknownTime((value) => !value)}
-              />
-            }
-          >
-            <input
-              inputMode="numeric"
-              value={birthTime}
-              onChange={(event) => handleBirthTimeChange(event.target.value)}
-              disabled={unknownTime}
-              placeholder="태어난 시간 입력 (예: 13:20)"
-              aria-label="태어난 시간"
-              className="form-line-input disabled:text-white/35"
-            />
-          </FieldBlock>
-
-          <fieldset>
-            <legend className="gender-legend">성별</legend>
-            <div className="gender-grid">
-              <GenderButton
-                active={gender === 'male'}
-                label="남성"
-                onClick={() => setGender('male')}
-              />
-              <GenderButton
-                active={gender === 'female'}
-                label="여성"
-                onClick={() => setGender('female')}
+        {screen !== 'complete' && (
+          <div className="form-progress" aria-label={`진행률 ${progress}/${formSteps.length}`}>
+            <span>
+              {progress}/{formSteps.length}
+            </span>
+            <div className="form-progress-track">
+              <div
+                className="form-progress-bar"
+                style={{ width: progressWidth }}
               />
             </div>
-          </fieldset>
+          </div>
+        )}
 
-          <Button
-            type="button"
-            disabled={!canContinue}
-            className="next-button w-full bg-white/24 font-extrabold text-white/45 shadow-none disabled:opacity-100 enabled:bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] enabled:text-[#111b34] enabled:hover:brightness-105"
-          >
-            다음으로
-          </Button>
+        <div
+          key={screen}
+          className={`form-step-panel form-step-${direction}`}
+        >
+          {screen === 'name' && (
+            <FieldBlock label="이름">
+              <input
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value.slice(0, 4));
+                  setError(null);
+                }}
+                placeholder="이름을 입력해 주세요. (최대 4글자)"
+                aria-label="이름"
+                className="form-line-input"
+              />
+            </FieldBlock>
+          )}
+
+          {screen === 'birthday' && (
+            <FieldBlock
+              label="생년월일"
+              action={
+                <div className="flex items-center gap-5">
+                  <ChoiceButton
+                    active={calendarType === 'solar'}
+                    label="양력"
+                    onClick={() => {
+                      setCalendarType('solar');
+                      setError(null);
+                    }}
+                  />
+                  <ChoiceButton
+                    active={calendarType === 'lunar'}
+                    label="음력"
+                    onClick={() => {
+                      setCalendarType('lunar');
+                      setError(null);
+                    }}
+                  />
+                </div>
+              }
+            >
+              <input
+                inputMode="numeric"
+                value={birthday}
+                onChange={(event) => handleBirthdayChange(event.target.value)}
+                placeholder="0000.00.00"
+                aria-label="생년월일"
+                className="form-line-input"
+              />
+            </FieldBlock>
+          )}
+
+          {screen === 'birth-time' && (
+            <FieldBlock
+              label="태어난 시간"
+              action={
+                <ChoiceButton
+                  active={unknownTime}
+                  label="시간 모름"
+                  onClick={() => {
+                    setUnknownTime((value) => !value);
+                    setError(null);
+                  }}
+                />
+              }
+            >
+              <input
+                inputMode="numeric"
+                value={birthTime}
+                onChange={(event) => handleBirthTimeChange(event.target.value)}
+                disabled={unknownTime}
+                placeholder="태어난 시간 입력 (예: 13:20)"
+                aria-label="태어난 시간"
+                className="form-line-input disabled:text-white/35"
+              />
+            </FieldBlock>
+          )}
+
+          {screen === 'gender' && (
+            <fieldset>
+              <legend className="gender-legend">성별</legend>
+              <div className="gender-grid">
+                <GenderButton
+                  active={gender === 'male'}
+                  label="남성"
+                  onClick={() => {
+                    setGender('male');
+                    setError(null);
+                  }}
+                />
+                <GenderButton
+                  active={gender === 'female'}
+                  label="여성"
+                  onClick={() => {
+                    setGender('female');
+                    setError(null);
+                  }}
+                />
+              </div>
+            </fieldset>
+          )}
+
+          {screen === 'loading' && (
+            <output className="result-panel" aria-live="polite">
+              <Sparkles className="size-9 text-[#dbe8ff]" />
+              <p className="result-title">풀이를 준비하고 있습니다</p>
+              <p className="result-copy">입력해주신 생년월일의 결을 살피는 중입니다.</p>
+            </output>
+          )}
+
+          {screen === 'complete' && (
+            <div className="result-panel">
+              <MoonStar className="size-10 text-[#dbe8ff]" />
+              <p className="result-title">사주 정보 입력 완료</p>
+              <p className="result-copy">월영당의 풀이를 곧 이어서 확인하실 수 있습니다.</p>
+              <Button
+                type="button"
+                onClick={onReset}
+                className="next-button mt-7 w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
+              >
+                처음으로
+              </Button>
+            </div>
+          )}
+
+          {currentError && <p className="form-error">{currentError}</p>}
         </div>
+
+        {screen !== 'loading' && screen !== 'complete' && (
+          <div className="form-bottom-action">
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="next-button w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
+            >
+              <Sparkles className="size-5" data-icon="inline-start" />
+              {screen === 'gender' ? '풀이 시작하기' : '다음으로'}
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );
+}
+
+function getErrorMessage(screen: Exclude<FlowScreen, 'intro'>) {
+  if (screen === 'birthday') {
+    return '생년월일 8자리를 입력해 주세요.';
+  }
+
+  if (screen === 'birth-time') {
+    return '태어난 시간을 입력하거나 시간 모름을 선택해 주세요.';
+  }
+
+  if (screen === 'gender') {
+    return '성별을 선택해 주세요.';
+  }
+
+  return '필수 항목입니다.';
 }
 
 function FieldBlock({
