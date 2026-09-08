@@ -177,7 +177,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
             월영아씨
           </p>
-          <h1 className="font-serif text-[clamp(4.15rem,18vw,5.7rem)] font-black leading-[0.92] tracking-normal text-white [text-shadow:0_10px_28px_rgb(0_0_0/70%),0_0_24px_rgb(120_166_255/70%)]">
+          <h1 className="hero-title font-serif font-black text-white [text-shadow:0_10px_28px_rgb(0_0_0/70%),0_0_24px_rgb(120_166_255/70%)]">
             사주 소개팅
           </h1>
           <p className="mx-auto mt-5 max-w-[19rem] text-[1.05rem] font-medium leading-7 text-[#f4f7ff] [text-shadow:0_3px_13px_rgb(0_0_0/70%)]">

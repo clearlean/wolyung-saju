@@ -154,6 +154,25 @@ body {
   transform-origin: center 34%;
 }
 
+.hero-title {
+  white-space: nowrap;
+  font-size: 3.35rem;
+  line-height: 0.96;
+  letter-spacing: 0;
+}
+
+@media (min-width: 400px) {
+  .hero-title {
+    font-size: 3.7rem;
+  }
+}
+
+@media (min-width: 440px) {
+  .hero-title {
+    font-size: 3.95rem;
+  }
+}
+
 .form-backdrop-image {
   object-position: center 37%;
   transform: scale(1.2);
