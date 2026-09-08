@@ -9,18 +9,25 @@ import {
   MoonStar,
   Sparkles,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-
-const readingPoints = ['사주 기반 궁합', '관계 성향 매칭', '프리미엄 소개팅'];
-const formSteps = ['name', 'birthday', 'birth-time', 'gender'] as const;
-
-type CalendarType = 'solar' | 'lunar';
-type Gender = 'male' | 'female' | '';
-type FormStep = (typeof formSteps)[number];
-type FlowScreen = 'intro' | FormStep | 'loading' | 'complete';
-type Direction = 'forward' | 'backward';
+import {
+  FIELD_COPY,
+  FORM_COPY,
+  FORM_STEPS,
+  HERO_COPY,
+  HERO_FOOTER_POINTS,
+  READING_POINTS,
+  RESULT_COPY,
+  type CalendarType,
+  type Direction,
+  type FlowScreen,
+  type FormStep,
+  type Gender,
+  getErrorMessage,
+} from '@/lib/wolyung-flow';
 
 export default function Home() {
   const [screen, setScreen] = useState<FlowScreen>('intro');
@@ -53,7 +60,10 @@ export default function Home() {
     goToScreen('name');
   };
 
-  const goToScreen = (nextScreen: FlowScreen, mode: 'push' | 'replace' = 'push') => {
+  const goToScreen = (
+    nextScreen: FlowScreen,
+    mode: 'push' | 'replace' = 'push',
+  ) => {
     const nextDirection =
       getScreenIndex(nextScreen) < getScreenIndex(previousScreen.current)
         ? 'backward'
@@ -101,7 +111,7 @@ function getScreenFromHash(): FlowScreen {
   const hashValue = window.location.hash.replace('#_q=', '');
 
   if (
-    formSteps.includes(hashValue as FormStep) ||
+    FORM_STEPS.includes(hashValue as FormStep) ||
     hashValue === 'loading' ||
     hashValue === 'complete'
   ) {
@@ -121,10 +131,10 @@ function getScreenIndex(screen: FlowScreen) {
   }
 
   if (screen === 'complete') {
-    return formSteps.length + 1;
+    return FORM_STEPS.length + 1;
   }
 
-  return formSteps.indexOf(screen);
+  return FORM_STEPS.indexOf(screen);
 }
 
 function getPreviousScreen(screen: FlowScreen): FlowScreen {
@@ -132,10 +142,10 @@ function getPreviousScreen(screen: FlowScreen): FlowScreen {
     return 'gender';
   }
 
-  const currentIndex = formSteps.indexOf(screen as FormStep);
+  const currentIndex = FORM_STEPS.indexOf(screen as FormStep);
 
   if (currentIndex > 0) {
-    return formSteps[currentIndex - 1];
+    return FORM_STEPS[currentIndex - 1];
   }
 
   return 'intro';
@@ -146,7 +156,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
     <div className="relative min-h-dvh">
       <img
         src="/astrology-woman.png"
-        alt="달빛 아래 점성술 차트를 살피는 월영당 상담가"
+        alt={HERO_COPY.imageAlt}
         className="hero-portrait absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(5_9_22/10%)_0%,rgb(6_10_28/20%)_38%,rgb(5_8_20/78%)_73%,rgb(4_7_18/96%)_100%)]" />
@@ -154,12 +164,16 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
       <div className="stars-layer" aria-hidden="true" />
 
       <header className="relative z-10 flex items-center justify-between px-5 pt-5">
-        <a href="/" aria-label="월영당 홈" className="flex items-center gap-2">
+        <a
+          href="/"
+          aria-label={HERO_COPY.navLabel}
+          className="flex items-center gap-2"
+        >
           <span className="grid size-8 place-items-center rounded-[7px] border border-[#e7c27a]/55 bg-[#7b1f2d]/95 text-[11px] font-bold leading-none text-[#ffe7b0]">
-            月影
+            {HERO_COPY.logoMark}
           </span>
           <span className="text-[1.35rem] font-semibold tracking-[0.08em] text-white [text-shadow:0_2px_14px_rgb(0_0_0/55%)]">
-            월영당
+            {HERO_COPY.logoText}
           </span>
         </a>
         <Button
@@ -175,20 +189,20 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
       <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24">
         <div className="mb-6 text-center">
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
-            월영아씨
+            {HERO_COPY.brand}
           </p>
           <h1 className="hero-title font-serif font-black text-white [text-shadow:0_10px_28px_rgb(0_0_0/70%),0_0_24px_rgb(120_166_255/70%)]">
-            사주 소개팅
+            {HERO_COPY.title}
           </h1>
           <p className="mx-auto mt-5 max-w-[19rem] text-[1.05rem] font-medium leading-7 text-[#f4f7ff] [text-shadow:0_3px_13px_rgb(0_0_0/70%)]">
-            왠지 끌리는 사람에게는
+            {HERO_COPY.description[0]}
             <br />
-            이유가 있습니다
+            {HERO_COPY.description[1]}
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
-          {readingPoints.map((point) => (
+          {READING_POINTS.map((point) => (
             <div
               key={point}
               className="rounded-[8px] border border-white/16 bg-[#071127]/50 px-2 py-3 text-center text-[0.82rem] font-semibold text-[#dce9ff] shadow-[0_8px_28px_rgb(0_0_0/22%)] backdrop-blur-md"
@@ -207,17 +221,17 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
           className="h-14 w-full rounded-[8px] border border-white/55 bg-[linear-gradient(90deg,#d9e7ff,#ffffff_48%,#dbe8ff)] text-[1rem] font-extrabold text-[#101b35] shadow-[0_16px_36px_rgb(9_17_42/50%),inset_0_0_0_1px_rgb(255_255_255/60%)] hover:brightness-105"
         >
           <Sparkles className="size-5" data-icon="inline-start" />
-          내 연분 확인하기
+          {HERO_COPY.cta}
         </Button>
         <div className="mt-3 flex items-center justify-center gap-4 text-[0.76rem] font-medium text-[#c4d2f2]">
           <span className="inline-flex items-center gap-1.5">
             <MoonStar className="size-3.5" />
-            사주 기반 궁합
+            {HERO_FOOTER_POINTS[0]}
           </span>
           <span className="h-3 w-px bg-white/20" />
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="size-3.5" />
-            프리미엄 소개팅
+            {HERO_FOOTER_POINTS[1]}
           </span>
         </div>
       </div>
@@ -249,9 +263,10 @@ function BirthInfoForm({
     screen: Exclude<FlowScreen, 'intro'>;
   } | null>(null);
 
-  const currentStepIndex = formSteps.indexOf(screen as FormStep);
-  const progress = currentStepIndex >= 0 ? currentStepIndex + 1 : formSteps.length;
-  const progressWidth = `${(progress / formSteps.length) * 100}%`;
+  const currentStepIndex = FORM_STEPS.indexOf(screen as FormStep);
+  const progress =
+    currentStepIndex >= 0 ? currentStepIndex + 1 : FORM_STEPS.length;
+  const progressWidth = `${(progress / FORM_STEPS.length) * 100}%`;
   const currentError = error?.screen === screen ? error.message : '';
 
   useEffect(() => {
@@ -307,7 +322,7 @@ function BirthInfoForm({
       return;
     }
 
-    const nextStep = formSteps[currentStepIndex + 1];
+    const nextStep = FORM_STEPS[currentStepIndex + 1];
     onStepChange(nextStep ?? 'loading');
   };
 
@@ -324,7 +339,7 @@ function BirthInfoForm({
       <button
         type="button"
         onClick={onBack}
-        aria-label="이전 단계로 돌아가기"
+        aria-label={FORM_COPY.backLabel}
         className="absolute left-4 top-5 z-30 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
       >
         <ChevronLeft className="size-9 stroke-[2.5]" />
@@ -335,9 +350,12 @@ function BirthInfoForm({
         className="birth-form relative z-10 flex min-h-dvh flex-col"
       >
         {screen !== 'complete' && (
-          <div className="form-progress" aria-label={`진행률 ${progress}/${formSteps.length}`}>
+          <div
+            className="form-progress"
+            aria-label={FORM_COPY.progressLabel(progress, FORM_STEPS.length)}
+          >
             <span>
-              {progress}/{formSteps.length}
+              {progress}/{FORM_STEPS.length}
             </span>
             <div className="form-progress-track">
               <div
@@ -348,20 +366,19 @@ function BirthInfoForm({
           </div>
         )}
 
-        <div
-          key={screen}
-          className={`form-step-panel form-step-${direction}`}
-        >
+        <div key={screen} className={`form-step-panel form-step-${direction}`}>
           {screen === 'name' && (
-            <FieldBlock label="이름">
+            <FieldBlock label={FIELD_COPY.name.label}>
               <input
                 value={name}
                 onChange={(event) => {
-                  setName(event.target.value.slice(0, 4));
+                  setName(
+                    event.target.value.slice(0, FIELD_COPY.name.maxLength),
+                  );
                   setError(null);
                 }}
-                placeholder="이름을 입력해 주세요. (최대 4글자)"
-                aria-label="이름"
+                placeholder={FIELD_COPY.name.placeholder}
+                aria-label={FIELD_COPY.name.ariaLabel}
                 className="form-line-input"
               />
             </FieldBlock>
@@ -369,12 +386,12 @@ function BirthInfoForm({
 
           {screen === 'birthday' && (
             <FieldBlock
-              label="생년월일"
+              label={FIELD_COPY.birthday.label}
               action={
                 <div className="flex items-center gap-5">
                   <ChoiceButton
                     active={calendarType === 'solar'}
-                    label="양력"
+                    label={FIELD_COPY.calendar.solarLabel}
                     onClick={() => {
                       setCalendarType('solar');
                       setError(null);
@@ -382,7 +399,7 @@ function BirthInfoForm({
                   />
                   <ChoiceButton
                     active={calendarType === 'lunar'}
-                    label="음력"
+                    label={FIELD_COPY.calendar.lunarLabel}
                     onClick={() => {
                       setCalendarType('lunar');
                       setError(null);
@@ -395,8 +412,8 @@ function BirthInfoForm({
                 inputMode="numeric"
                 value={birthday}
                 onChange={(event) => handleBirthdayChange(event.target.value)}
-                placeholder="0000.00.00"
-                aria-label="생년월일"
+                placeholder={FIELD_COPY.birthday.placeholder}
+                aria-label={FIELD_COPY.birthday.ariaLabel}
                 className="form-line-input"
               />
             </FieldBlock>
@@ -404,11 +421,11 @@ function BirthInfoForm({
 
           {screen === 'birth-time' && (
             <FieldBlock
-              label="태어난 시간"
+              label={FIELD_COPY.birthTime.label}
               action={
                 <ChoiceButton
                   active={unknownTime}
-                  label="시간 모름"
+                  label={FIELD_COPY.birthTime.unknownLabel}
                   onClick={() => {
                     setUnknownTime((value) => !value);
                     setError(null);
@@ -421,8 +438,8 @@ function BirthInfoForm({
                 value={birthTime}
                 onChange={(event) => handleBirthTimeChange(event.target.value)}
                 disabled={unknownTime}
-                placeholder="태어난 시간 입력 (예: 13:20)"
-                aria-label="태어난 시간"
+                placeholder={FIELD_COPY.birthTime.placeholder}
+                aria-label={FIELD_COPY.birthTime.ariaLabel}
                 className="form-line-input disabled:text-white/35"
               />
             </FieldBlock>
@@ -430,11 +447,13 @@ function BirthInfoForm({
 
           {screen === 'gender' && (
             <fieldset>
-              <legend className="gender-legend">성별</legend>
+              <legend className="gender-legend">
+                {FIELD_COPY.gender.label}
+              </legend>
               <div className="gender-grid">
                 <GenderButton
                   active={gender === 'male'}
-                  label="남성"
+                  label={FIELD_COPY.gender.maleLabel}
                   onClick={() => {
                     setGender('male');
                     setError(null);
@@ -442,7 +461,7 @@ function BirthInfoForm({
                 />
                 <GenderButton
                   active={gender === 'female'}
-                  label="여성"
+                  label={FIELD_COPY.gender.femaleLabel}
                   onClick={() => {
                     setGender('female');
                     setError(null);
@@ -455,22 +474,22 @@ function BirthInfoForm({
           {screen === 'loading' && (
             <output className="result-panel" aria-live="polite">
               <Sparkles className="size-9 text-[#dbe8ff]" />
-              <p className="result-title">풀이를 준비하고 있습니다</p>
-              <p className="result-copy">입력해주신 생년월일의 결을 살피는 중입니다.</p>
+              <p className="result-title">{RESULT_COPY.loading.title}</p>
+              <p className="result-copy">{RESULT_COPY.loading.body}</p>
             </output>
           )}
 
           {screen === 'complete' && (
             <div className="result-panel">
               <MoonStar className="size-10 text-[#dbe8ff]" />
-              <p className="result-title">사주 정보 입력 완료</p>
-              <p className="result-copy">월영당의 풀이를 곧 이어서 확인하실 수 있습니다.</p>
+              <p className="result-title">{RESULT_COPY.complete.title}</p>
+              <p className="result-copy">{RESULT_COPY.complete.body}</p>
               <Button
                 type="button"
                 onClick={onReset}
                 className="next-button mt-7 w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
               >
-                처음으로
+                {FORM_COPY.resetLabel}
               </Button>
             </div>
           )}
@@ -486,7 +505,9 @@ function BirthInfoForm({
               className="next-button w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
             >
               <Sparkles className="size-5" data-icon="inline-start" />
-              {screen === 'gender' ? '풀이 시작하기' : '다음으로'}
+              {screen === 'gender'
+                ? FORM_COPY.submitLabel
+                : FORM_COPY.nextLabel}
             </Button>
           </div>
         )}
@@ -495,30 +516,14 @@ function BirthInfoForm({
   );
 }
 
-function getErrorMessage(screen: Exclude<FlowScreen, 'intro'>) {
-  if (screen === 'birthday') {
-    return '생년월일 8자리를 입력해 주세요.';
-  }
-
-  if (screen === 'birth-time') {
-    return '태어난 시간을 입력하거나 시간 모름을 선택해 주세요.';
-  }
-
-  if (screen === 'gender') {
-    return '성별을 선택해 주세요.';
-  }
-
-  return '필수 항목입니다.';
-}
-
 function FieldBlock({
   label,
   action,
   children,
 }: {
   label: string;
-  action?: React.ReactNode;
-  children: React.ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="form-field">
