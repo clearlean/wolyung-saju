@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-const readingPoints = ['올해의 큰 흐름', '연애와 관계운', '일과 재물운'];
+const readingPoints = ['사주 기반 궁합', '관계 성향 매칭', '프리미엄 소개팅'];
 const formSteps = ['name', 'birthday', 'birth-time', 'gender'] as const;
 
 type CalendarType = 'solar' | 'lunar';
@@ -178,12 +178,12 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
             월영아씨
           </p>
           <h1 className="font-serif text-[clamp(4.15rem,18vw,5.7rem)] font-black leading-[0.92] tracking-normal text-white [text-shadow:0_10px_28px_rgb(0_0_0/70%),0_0_24px_rgb(120_166_255/70%)]">
-            정통사주
+            사주 소개팅
           </h1>
           <p className="mx-auto mt-5 max-w-[19rem] text-[1.05rem] font-medium leading-7 text-[#f4f7ff] [text-shadow:0_3px_13px_rgb(0_0_0/70%)]">
-            “당신의 계절이 바뀌는 순간,
+            왠지 끌리는 사람에게는
             <br />
-            운명의 결을 먼저 읽어드립니다”
+            이유가 있습니다
           </p>
         </div>
 
@@ -207,17 +207,17 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
           className="h-14 w-full rounded-[8px] border border-white/55 bg-[linear-gradient(90deg,#d9e7ff,#ffffff_48%,#dbe8ff)] text-[1rem] font-extrabold text-[#101b35] shadow-[0_16px_36px_rgb(9_17_42/50%),inset_0_0_0_1px_rgb(255_255_255/60%)] hover:brightness-105"
         >
           <Sparkles className="size-5" data-icon="inline-start" />
-          내 사주팔자 바로 확인하기
+          내 연분 확인하기
         </Button>
         <div className="mt-3 flex items-center justify-center gap-4 text-[0.76rem] font-medium text-[#c4d2f2]">
           <span className="inline-flex items-center gap-1.5">
             <MoonStar className="size-3.5" />
-            프리미엄 풀이
+            사주 기반 궁합
           </span>
           <span className="h-3 w-px bg-white/20" />
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="size-3.5" />
-            생년월일 기반
+            프리미엄 소개팅
           </span>
         </div>
       </div>
