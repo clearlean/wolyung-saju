@@ -37,3 +37,6 @@ next-env.d.ts
 /outputs/
 /work/
 *.tar.gz
+
+# typescript incremental build cache
+tsconfig.tsbuildinfo
