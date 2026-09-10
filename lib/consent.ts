@@ -11,9 +11,21 @@ export const CONSENT_VERSION = '2026-09-10';
 /**
  * 문의와 삭제 요청을 받을 창구.
  *
- * 개인정보 처리에는 연락처 고지가 필요하다. 실제 운영 계정으로 바꿔야 한다.
+ * 개인정보 처리에는 연락처 고지가 필요하다. 계정을 옮기면 여기만 고치면 된다.
  */
-export const CONTACT_PLACEHOLDER = '@wolyungdang';
+export const CONTACT_HANDLE = '@wolyungdang';
+
+/** 첫 화면 오른쪽 위 `문의` 버튼이 여는 안내. */
+export const CONTACT_COPY = {
+  buttonLabel: '문의',
+  openLabel: '문의 안내 열기',
+  closeLabel: '문의 안내 닫기',
+  /** 아이디만 링크로 감싸므로 앞뒤를 나눠 둔다. */
+  bodyBefore: '정정, 삭제 요청은 ',
+  bodyAfter: ' 인스타그램 페이지를 통해 부탁드립니다.',
+  handle: CONTACT_HANDLE,
+  handleHref: `https://instagram.com/${CONTACT_HANDLE.slice(1)}`,
+} as const;
 
 export const CONSENT_COPY = {
   /** 체크박스 옆에 늘 보이는 한 줄. */
@@ -46,7 +58,7 @@ export const CONSENT_COPY = {
     },
     {
       heading: '열람·정정·삭제 요청',
-      body: `인스타그램 ${CONTACT_PLACEHOLDER} 으로 연락 주시면 보관 중인 정보를 확인·수정하거나 삭제해 드립니다.`,
+      body: `인스타그램 ${CONTACT_HANDLE} 으로 연락 주시면 보관 중인 정보를 확인·수정하거나 삭제해 드립니다.`,
     },
   ],
 } as const;

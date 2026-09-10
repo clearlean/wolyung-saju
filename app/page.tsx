@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   Circle,
   Heart,
-  Menu,
   MoonStar,
   Sparkles,
 } from 'lucide-react';
@@ -16,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LoveTopics } from '@/components/love-topics';
 import { SajuChartTable } from '@/components/saju-chart-table';
 import { Button } from '@/components/ui/button';
-import { CONSENT_COPY } from '@/lib/consent';
+import { CONSENT_COPY, CONTACT_COPY } from '@/lib/consent';
 import { buildLoveReading } from '@/lib/love-reading';
 import { calculateSaju, type SajuChart } from '@/lib/saju/pillars';
 import {
@@ -263,14 +262,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
             {HERO_COPY.logoText}
           </span>
         </a>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="메뉴 열기"
-          className="rounded-full bg-white/8 text-white shadow-[0_8px_24px_rgb(0_0_0/25%)] backdrop-blur-md hover:bg-white/16 hover:text-white"
-        >
-          <Menu className="size-6" />
-        </Button>
+        <ContactMenu />
       </header>
 
       <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24">
@@ -322,6 +314,76 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * 첫 화면 오른쪽 위 `문의` 버튼.
+ *
+ * 개인정보 정정·삭제 요청을 받을 창구를 어디서든 찾을 수 있어야 해서, 동의
+ * 전문 안에만 두지 않고 첫 화면에도 꺼내 뒀다.
+ */
+function ContactMenu() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
+  return (
+    <div className="contact-menu">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls="contact-panel"
+        aria-label={open ? CONTACT_COPY.closeLabel : CONTACT_COPY.openLabel}
+        className="h-10 rounded-full bg-white/8 px-4 text-[0.9rem] font-bold text-white shadow-[0_8px_24px_rgb(0_0_0/25%)] backdrop-blur-md hover:bg-white/16 hover:text-white"
+      >
+        {CONTACT_COPY.buttonLabel}
+      </Button>
+
+      {open && (
+        <>
+          {/* 패널 바깥을 누르면 닫힌다. */}
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            onClick={() => setOpen(false)}
+            className="contact-scrim"
+          />
+          {/* 초점을 가두지 않으므로 dialog 가 아니라 여닫이(disclosure)다. */}
+          <div id="contact-panel" className="contact-panel">
+            <p className="contact-panel-body">
+              {CONTACT_COPY.bodyBefore}
+              <a
+                href={CONTACT_COPY.handleHref}
+                target="_blank"
+                rel="noreferrer"
+                className="contact-panel-handle"
+              >
+                {CONTACT_COPY.handle}
+              </a>
+              {CONTACT_COPY.bodyAfter}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -966,6 +966,56 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ * 첫 화면 문의 버튼
+ * ------------------------------------------------------------------ */
+
+.contact-menu {
+  position: relative;
+}
+
+/*
+ * 패널 바깥을 덮는 판. 배경을 어둡게 깔지 않는 것은 첫 화면 이미지를 가리지
+ * 않으면서 바깥 누름만 받아 내기 위해서다.
+ */
+.contact-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  cursor: default;
+}
+
+.contact-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 40;
+  width: max-content;
+  max-width: min(17rem, calc(100vw - 2.5rem));
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 12px;
+  background: rgb(7 11 24 / 0.94);
+  box-shadow: 0 18px 40px rgb(2 5 16 / 0.55);
+  backdrop-filter: blur(12px);
+  padding: 0.85rem 0.9rem;
+  animation: topic-open 200ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.contact-panel-body {
+  color: rgb(228 237 255 / 0.86);
+  font-size: 0.83rem;
+  font-weight: 550;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.contact-panel-handle {
+  color: #f0d7a8;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ *
  * 개인정보 수집·이용 동의
  * ------------------------------------------------------------------ */
 
@@ -1141,11 +1191,73 @@ body {
   line-height: 1.5;
 }
 
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+  margin-top: 1rem;
+}
+
+.admin-export {
+  border: 1px solid rgb(240 215 168 / 0.45);
+  border-radius: 8px;
+  background: rgb(240 215 168 / 0.1);
+  padding: 0.5rem 0.85rem;
+  color: #f0d7a8;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.admin-export:hover {
+  background: rgb(240 215 168 / 0.18);
+}
+
+.admin-toolbar-note {
+  color: rgb(206 221 252 / 0.55);
+  font-size: 0.78rem;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
 .admin-table-scroll {
   overflow-x: auto;
   margin-top: 1.1rem;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 10px;
+}
+
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.admin-page-button {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 8px;
+  padding: 0.42rem 0.9rem;
+  color: rgb(228 237 255 / 0.85);
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+
+.admin-page-button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.admin-page-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.admin-page-state {
+  color: rgb(206 221 252 / 0.62);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-table {

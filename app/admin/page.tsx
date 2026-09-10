@@ -30,15 +30,24 @@ type SubmissionRow = {
 
 type Status = 'checking' | 'locked' | 'ready';
 
+/** 한 쪽에 보여 줄 행 수. 서버의 기본값과 맞춰 둔다. */
+const PAGE_SIZE = 100;
+
+const EXPORT_URL = '/api/admin/submissions?format=csv';
+
 export default function AdminPage() {
   const [status, setStatus] = useState<Status>('checking');
   const [rows, setRows] = useState<readonly SubmissionRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
-    const response = await fetch('/api/admin/submissions');
+  const load = useCallback(async (nextOffset: number) => {
+    const response = await fetch(
+      `/api/admin/submissions?limit=${PAGE_SIZE}&offset=${nextOffset}`,
+    );
 
     if (response.status === 401) {
       setStatus('locked');
@@ -48,6 +57,7 @@ export default function AdminPage() {
     const payload = (await response.json()) as {
       ok: boolean;
       rows?: SubmissionRow[];
+      total?: number;
       error?: string;
     };
 
@@ -58,6 +68,8 @@ export default function AdminPage() {
     }
 
     setRows(payload.rows ?? []);
+    setTotal(payload.total ?? 0);
+    setOffset(nextOffset);
     setMessage('');
     setStatus('ready');
   }, []);
@@ -66,7 +78,7 @@ export default function AdminPage() {
   // 이 한 번의 setState 로 'checking' → 'locked' | 'ready' 렌더가 한 번 더 도는데,
   // 관리자 혼자 쓰는 화면이라 그대로 두었다.
   useEffect(() => {
-    void load();
+    void load(0);
   }, [load]);
 
   const signIn = async () => {
@@ -91,7 +103,7 @@ export default function AdminPage() {
       }
 
       setPassword('');
-      await load();
+      await load(0);
     } finally {
       setBusy(false);
     }
@@ -100,6 +112,8 @@ export default function AdminPage() {
   const signOut = async () => {
     await fetch('/api/admin/login', { method: 'DELETE' });
     setRows([]);
+    setTotal(0);
+    setOffset(0);
     setStatus('locked');
   };
 
@@ -117,7 +131,10 @@ export default function AdminPage() {
       { method: 'DELETE' },
     );
 
-    await load();
+    // 마지막 쪽의 마지막 행을 지웠으면 빈 쪽이 남으므로 한 쪽 앞으로 물러난다.
+    const wasLastOnPage = rows.length === 1 && offset > 0;
+
+    await load(wasLastOnPage ? offset - PAGE_SIZE : offset);
   };
 
   return (
@@ -167,9 +184,29 @@ export default function AdminPage() {
       {status === 'ready' && (
         <>
           <p className="admin-note">
-            {rows.length}건. 최근 신청 순입니다. 보유 기간은 매칭 종료 후
-            6개월이며, 삭제 요청이 오면 이 화면에서 바로 지울 수 있습니다.
+            총 {total}건
+            {total > 0 && (
+              <>
+                {' '}
+                중 {offset + 1}–{offset + rows.length}번째
+              </>
+            )}
+            . 최근 신청 순입니다. 보유 기간은 매칭 종료 후 6개월이며, 삭제
+            요청이 오면 이 화면에서 바로 지울 수 있습니다.
           </p>
+
+          {/*
+            배포처의 D1 에는 wrangler 로 붙을 수 없다. 매칭을 돌릴 자료를 빼내고
+            백업을 남기는 수단이 이 내보내기뿐이라 눈에 띄는 자리에 둔다.
+          */}
+          <div className="admin-toolbar">
+            <a href={EXPORT_URL} download className="admin-export">
+              CSV 내보내기 (전체 {total}건)
+            </a>
+            <span className="admin-toolbar-note">
+              실명과 생년월일이 담긴 파일입니다. 내려받은 뒤 관리에 주의하세요.
+            </span>
+          </div>
 
           {rows.length === 0 ? (
             <p className="admin-note">아직 신청서가 없습니다.</p>
@@ -221,6 +258,31 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {total > PAGE_SIZE && (
+            <nav className="admin-pager" aria-label="신청서 쪽 이동">
+              <button
+                type="button"
+                onClick={() => void load(Math.max(0, offset - PAGE_SIZE))}
+                disabled={offset === 0}
+                className="admin-page-button"
+              >
+                이전
+              </button>
+              <span className="admin-page-state">
+                {Math.floor(offset / PAGE_SIZE) + 1} /{' '}
+                {Math.ceil(total / PAGE_SIZE)}
+              </span>
+              <button
+                type="button"
+                onClick={() => void load(offset + PAGE_SIZE)}
+                disabled={offset + rows.length >= total}
+                className="admin-page-button"
+              >
+                다음
+              </button>
+            </nav>
           )}
         </>
       )}
