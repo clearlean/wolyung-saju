@@ -51,8 +51,8 @@
 
 body {
   font-family:
-    Pretendard, var(--font-geist-sans), 'Apple SD Gothic Neo',
-    'Noto Sans KR', Arial, Helvetica, sans-serif;
+    Pretendard, var(--font-geist-sans), 'Apple SD Gothic Neo', 'Noto Sans KR',
+    Arial, Helvetica, sans-serif;
 }
 
 :root {
@@ -140,11 +140,31 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 12% 17%, rgb(255 255 255 / 0.95) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 82% 12%, rgb(255 255 255 / 0.9) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 63% 23%, rgb(177 205 255 / 0.95) 0 1.5px, transparent 2.4px),
-    radial-gradient(circle at 32% 34%, rgb(255 255 255 / 0.65) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 90% 42%, rgb(255 255 255 / 0.75) 0 1px, transparent 1.8px);
+    radial-gradient(
+      circle at 12% 17%,
+      rgb(255 255 255 / 0.95) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 82% 12%,
+      rgb(255 255 255 / 0.9) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 63% 23%,
+      rgb(177 205 255 / 0.95) 0 1.5px,
+      transparent 2.4px
+    ),
+    radial-gradient(
+      circle at 32% 34%,
+      rgb(255 255 255 / 0.65) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 90% 42%,
+      rgb(255 255 255 / 0.75) 0 1px,
+      transparent 1.8px
+    );
   pointer-events: none;
 }
 
@@ -371,7 +391,12 @@ body {
   bottom: 0;
   z-index: 2;
   padding: 1.55rem 21px max(14px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, transparent, rgb(4 5 9 / 0.78) 30%, rgb(4 5 9 / 0.96));
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(4 5 9 / 0.78) 30%,
+    rgb(4 5 9 / 0.96)
+  );
 }
 
 .result-panel {
@@ -565,7 +590,9 @@ body {
   font-size: 1.92rem;
   font-weight: 900;
   line-height: 1.22;
-  text-shadow: 0 8px 26px rgb(0 0 0 / 0.6), 0 0 22px rgb(120 166 255 / 0.35);
+  text-shadow:
+    0 8px 26px rgb(0 0 0 / 0.6),
+    0 0 22px rgb(120 166 255 / 0.35);
 }
 
 .result-subject {
@@ -641,7 +668,9 @@ body {
   min-height: 5.1rem;
   border: 1.5px solid;
   border-radius: 10px;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 6px 18px rgb(0 0 0 / 0.3);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 6px 18px rgb(0 0 0 / 0.3);
 }
 
 .saju-cell-unknown {
@@ -734,7 +763,9 @@ body {
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 12px;
   background: rgb(255 255 255 / 0.04);
-  transition: border-color 200ms ease, background 200ms ease;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
 }
 
 .topic-item[data-open='true'] {
@@ -932,4 +963,216 @@ body {
     rgb(7 11 24 / 0.99) 82%,
     #070b18 100%
   );
+}
+
+/* ------------------------------------------------------------------ *
+ * 개인정보 수집·이용 동의
+ * ------------------------------------------------------------------ */
+
+.consent-block {
+  display: grid;
+  gap: 0.55rem;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  padding-top: 0.95rem;
+}
+
+.consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: rgb(238 244 255 / 0.92);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.45;
+  cursor: pointer;
+  word-break: keep-all;
+}
+
+.consent-checkbox {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  accent-color: #f0d7a8;
+  cursor: pointer;
+}
+
+.consent-toggle {
+  justify-self: start;
+  color: rgb(206 221 252 / 0.72);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.consent-detail {
+  max-height: 13rem;
+  overflow-y: auto;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 10px;
+  background: rgb(0 0 0 / 0.28);
+  padding: 0.85rem 0.9rem;
+  animation: topic-open 200ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.consent-detail-title {
+  margin-bottom: 0.6rem;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.consent-row {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.42rem 0;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.consent-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.consent-row dt {
+  color: #f0d7a8;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.consent-row dd {
+  color: rgb(224 234 255 / 0.78);
+  font-size: 0.78rem;
+  font-weight: 550;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+/*
+ * 미끼 항목. display:none 은 일부 봇이 걸러 내므로, 화면 밖으로 밀어내는
+ * 방식으로 감춘다.
+ */
+.honeypot-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 관리자 화면
+ * ------------------------------------------------------------------ */
+
+.admin-page {
+  min-height: 100dvh;
+  padding: 2rem 1.25rem 3rem;
+  background: #070b18;
+  color: #e7edfb;
+}
+
+.admin-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.admin-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.admin-signout,
+.admin-delete {
+  color: rgb(206 221 252 / 0.7);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-delete {
+  color: #ff9db0;
+}
+
+.admin-note {
+  color: rgb(206 221 252 / 0.62);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.admin-login {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 22rem;
+  margin-top: 2rem;
+}
+
+.admin-label {
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.admin-input {
+  height: 2.7rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.06);
+  padding: 0 0.7rem;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.admin-submit {
+  height: 2.7rem;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.admin-error {
+  color: #ff9db0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+  margin-top: 1.1rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.6rem 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.admin-table th {
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(224 234 255 / 0.82);
+  font-weight: 800;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-pillars {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
 }

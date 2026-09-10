@@ -5,6 +5,7 @@
  * 실패해도 풀이는 그대로 보여 준다.
  */
 
+import { CONSENT_VERSION } from './consent';
 import type { SajuChart, SajuInput } from './saju/pillars';
 import type { SubmissionDraft } from './wolyung-flow';
 
@@ -99,6 +100,13 @@ export type SubmissionPayload = {
   hourKnown: boolean;
   gender: SubmissionDraft['gender'];
   instagram: string;
+  consentAgreed: boolean;
+  consentVersion: string;
+  /**
+   * 사람 눈에 보이지 않는 미끼 항목. 사람이 채운 요청에서는 언제나 빈 문자열이고,
+   * 폼을 기계적으로 훑는 봇만 여기에 값을 넣는다.
+   */
+  website: string;
   pillars: {
     year: string;
     month: string;
@@ -111,6 +119,7 @@ export type SubmissionPayload = {
 export function toSubmissionPayload(
   draft: SubmissionDraft,
   chart: SajuChart,
+  honeypot = '',
 ): SubmissionPayload {
   const date = parseBirthday(draft.birthday);
   const isoDate = date
@@ -129,6 +138,9 @@ export function toSubmissionPayload(
     hourKnown: !draft.unknownTime,
     gender: draft.gender,
     instagram: normalizeInstagram(draft.instagram),
+    consentAgreed: draft.consentAgreed,
+    consentVersion: CONSENT_VERSION,
+    website: honeypot,
     pillars: {
       year: chart.yearPillar.sexagenary,
       month: chart.monthPillar.sexagenary,
@@ -145,12 +157,13 @@ export function toSubmissionPayload(
 export async function saveSubmission(
   draft: SubmissionDraft,
   chart: SajuChart,
+  honeypot = '',
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const response = await fetch('/api/submissions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(toSubmissionPayload(draft, chart)),
+      body: JSON.stringify(toSubmissionPayload(draft, chart, honeypot)),
     });
 
     if (!response.ok) {

@@ -24,6 +24,8 @@ export type SubmissionDraft = {
   gender: Exclude<Gender, ''>;
   /** @ 없이 저장한다. */
   instagram: string;
+  /** 개인정보 수집·이용 동의. 체크하지 않으면 제출할 수 없다. */
+  consentAgreed: boolean;
 };
 
 export const HERO_COPY = {

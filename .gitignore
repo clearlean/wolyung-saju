@@ -40,3 +40,6 @@ next-env.d.ts
 
 # typescript incremental build cache
 tsconfig.tsbuildinfo
+
+# wrangler local secrets (ADMIN_PASSWORD 등)
+.dev.vars

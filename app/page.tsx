@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LoveTopics } from '@/components/love-topics';
 import { SajuChartTable } from '@/components/saju-chart-table';
 import { Button } from '@/components/ui/button';
+import { CONSENT_COPY } from '@/lib/consent';
 import { buildLoveReading } from '@/lib/love-reading';
 import { calculateSaju, type SajuChart } from '@/lib/saju/pillars';
 import {
@@ -50,6 +51,7 @@ const EMPTY_DRAFT: SubmissionDraft = {
   unknownTime: false,
   gender: 'female',
   instagram: '',
+  consentAgreed: false,
 };
 
 export default function Home() {
@@ -120,23 +122,26 @@ export default function Home() {
    * 마지막 단계에서 부른다. 사주를 세우고 저장을 걸어 둔 뒤 로딩 화면으로 넘어간다.
    * 입력이 온전하지 않으면 false 를 돌려주어 폼이 오류를 띄우게 한다.
    */
-  const beginReading = useCallback((): boolean => {
-    const sajuInput = toSajuInput(draft);
+  const beginReading = useCallback(
+    (honeypot: string): boolean => {
+      const sajuInput = toSajuInput(draft);
 
-    if (!sajuInput) {
-      return false;
-    }
+      if (!sajuInput) {
+        return false;
+      }
 
-    const nextChart = calculateSaju(sajuInput);
-    setChart(nextChart);
+      const nextChart = calculateSaju(sajuInput);
+      setChart(nextChart);
 
-    void saveSubmission(draft, nextChart).then((result) => {
-      setSaveFailed(!result.ok);
-    });
+      void saveSubmission(draft, nextChart, honeypot).then((result) => {
+        setSaveFailed(!result.ok);
+      });
 
-    goToScreen('loading');
-    return true;
-  }, [draft, goToScreen]);
+      goToScreen('loading');
+      return true;
+    },
+    [draft, goToScreen],
+  );
 
   // 로딩 화면을 잠깐 보여 준 뒤 풀이로 넘어간다.
   useEffect(() => {
@@ -340,13 +345,15 @@ function BirthInfoForm({
   onGenderPicked: () => void;
   onStepChange: (screen: FlowScreen, mode?: 'push' | 'replace') => void;
   /** 마지막 단계에서 부른다. 입력이 온전하지 않으면 false 를 돌려준다. */
-  onSubmit: () => boolean;
+  onSubmit: (honeypot: string) => boolean;
   screen: Exclude<FlowScreen, 'intro' | 'result'>;
 }) {
   const [error, setError] = useState<{
     message: string;
     screen: Exclude<FlowScreen, 'intro' | 'result'>;
   } | null>(null);
+  // 사람에게는 보이지 않는 미끼 항목. 봇이 폼을 통째로 채우면 여기에 값이 들어간다.
+  const [honeypot, setHoneypot] = useState('');
 
   const currentStepIndex = FORM_STEPS.indexOf(screen as FormStep);
   const progress =
@@ -413,9 +420,11 @@ function BirthInfoForm({
         return getErrorMessage(screen);
       }
 
-      return isValidInstagram(draft.instagram)
-        ? null
-        : DETAIL_ERROR_MESSAGES.instagramFormat;
+      if (!isValidInstagram(draft.instagram)) {
+        return DETAIL_ERROR_MESSAGES.instagramFormat;
+      }
+
+      return draft.consentAgreed ? null : CONSENT_COPY.error;
     }
 
     return null;
@@ -434,7 +443,7 @@ function BirthInfoForm({
       return;
     }
 
-    if (!onSubmit()) {
+    if (!onSubmit(honeypot)) {
       setError({ message: DETAIL_ERROR_MESSAGES.birthdayNotReal, screen });
     }
   };
@@ -462,6 +471,20 @@ function BirthInfoForm({
         onSubmit={(event) => event.preventDefault()}
         className="birth-form relative z-10 flex min-h-dvh flex-col"
       >
+        {/*
+          미끼 항목. 화면에서 감추고 보조기기와 자동완성에서도 빼 두었으므로
+          사람은 채울 일이 없다. 폼을 통째로 훑는 봇만 여기에 값을 넣는다.
+        */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(event) => setHoneypot(event.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="honeypot-field"
+        />
         <div
           className="form-progress"
           aria-label={FORM_COPY.progressLabel(progress, FORM_STEPS.length)}
@@ -605,6 +628,13 @@ function BirthInfoForm({
             </FieldBlock>
           )}
 
+          {screen === 'instagram' && (
+            <ConsentBlock
+              agreed={draft.consentAgreed}
+              onToggle={() => update({ consentAgreed: !draft.consentAgreed })}
+            />
+          )}
+
           {screen === 'loading' && (
             <output className="result-panel" aria-live="polite">
               <Sparkles className="size-9 animate-pulse text-[#dbe8ff]" />
@@ -743,6 +773,58 @@ function ResultScreen({
             {FORM_COPY.resetLabel}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 개인정보 수집·이용 동의.
+ *
+ * 체크박스에는 무엇에 동의하는지 한 줄로 적고, 전문은 눌러서 펼치게 한다.
+ * 스텝을 하나 더 만들지 않은 것은 모바일에서 단계가 늘수록 이탈이 커지기 때문이다.
+ */
+function ConsentBlock({
+  agreed,
+  onToggle,
+}: {
+  agreed: boolean;
+  onToggle: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="consent-block">
+      <label className="consent-check">
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={onToggle}
+          className="consent-checkbox"
+        />
+        <span>{CONSENT_COPY.checkboxLabel}</span>
+      </label>
+
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        aria-controls="consent-detail"
+        className="consent-toggle"
+      >
+        {expanded ? CONSENT_COPY.collapseLabel : CONSENT_COPY.expandLabel}
+      </button>
+
+      <div id="consent-detail" className="consent-detail" hidden={!expanded}>
+        <h2 className="consent-detail-title">{CONSENT_COPY.title}</h2>
+        <dl>
+          {CONSENT_COPY.sections.map((section) => (
+            <div key={section.heading} className="consent-row">
+              <dt>{section.heading}</dt>
+              <dd>{section.body}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );
