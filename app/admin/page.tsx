@@ -196,8 +196,8 @@ export default function AdminPage() {
           </p>
 
           {/*
-            배포처의 D1 에는 wrangler 로 붙을 수 없다. 매칭을 돌릴 자료를 빼내고
-            백업을 남기는 수단이 이 내보내기뿐이라 눈에 띄는 자리에 둔다.
+            모집을 닫고 한 번에 매칭을 돌리는 방식이라, 그때 전체를 빼내는
+            창구가 필요하다. 백업도 겸한다.
           */}
           <div className="admin-toolbar">
             <a href={EXPORT_URL} download className="admin-export">

@@ -5,7 +5,8 @@
 
 ## 데모
 
-- 공개 링크: https://wolyung-saju.clearlean01.chatgpt.site
+- 운영 중: https://wolyung-saju.suhjoonahn.workers.dev (Cloudflare Workers, D1 은 APAC 리전)
+- 옛 링크: https://wolyung-saju.clearlean01.chatgpt.site (OpenAI Sites, `clearlean01` 계정 소유)
 
 ## 실행
 
@@ -24,6 +25,54 @@ npm run dev
 ```bash
 npm run build
 ```
+
+## 배포
+
+두 갈래가 다 살아 있습니다. `.env` 가 없으면 OpenAI Sites 쪽 자리표시자를 그대로 쓰고, 있으면 그 값으로 자기 Cloudflare 계정에 붙습니다. 갈라지는 지점은 `vite.config.ts` 한 곳입니다.
+
+### Cloudflare Workers (현재 운영 방식)
+
+처음 한 번만:
+
+```bash
+npx wrangler login
+```
+
+D1 을 만들고 나온 `database_id` 를 `.env` 에 적습니다 (`.env.example` 참고).
+
+```bash
+npx wrangler d1 create wolyung-saju
+```
+
+스키마를 올립니다. `migrations_dir` 이 생성된 설정 기준 경로라 **빌드를 먼저** 해야 합니다.
+
+```bash
+npm run build && npx wrangler d1 migrations apply wolyung-saju --remote --config dist/server/wrangler.json
+```
+
+관리자 비밀번호는 파일이 아니라 시크릿으로 넣습니다.
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD --config dist/server/wrangler.json
+```
+
+배포합니다.
+
+```bash
+npm run build && npx wrangler deploy --config dist/server/wrangler.json
+```
+
+운영 중인 D1 은 `wrangler` 로 직접 들여다볼 수 있습니다.
+
+```bash
+npx wrangler d1 execute wolyung-saju --remote --config dist/server/wrangler.json --command "SELECT COUNT(*) FROM submissions"
+```
+
+한글이 든 SQL 을 셸에서 직접 넘기면 Windows 에서 인코딩이 깨집니다. 한글을 비교하거나 넣어야 하면 UTF-8 파일로 저장해 `--file` 로 넘기세요.
+
+### OpenAI Sites
+
+`.env` 없이 ChatGPT 에서 "이 프로젝트를 Sites 로 배포해줘" 하면 됩니다. `.openai/hosting.json` 의 `project_id` 가 가리키는 계정이 소유자이고, D1 도 그 계정에 딸려 잡힙니다. 그쪽 D1 은 `wrangler` 로 붙을 수 없어서 자료를 빼내려면 `/admin` 의 CSV 내보내기를 써야 합니다.
 
 ## 현재 구현됨
 
@@ -74,7 +123,7 @@ npm run build
 
 - 스키마: `migrations/0001_create_submissions.sql`
 - 로컬 개발에서는 API 라우트가 같은 스키마를 `CREATE TABLE IF NOT EXISTS` 로 만들어 두므로 따로 마이그레이션을 돌리지 않아도 됩니다.
-- 배포 환경에는 `wrangler d1 migrations apply` 로 적용해야 합니다.
+- 배포 환경에는 `wrangler d1 migrations apply` 로 적용해야 합니다. 자세한 건 위 배포 항목에 있습니다.
 - 같은 인스타그램 아이디로 다시 제출하면 기존 행을 덮어씁니다.
 - 나중에 매칭 쿼리를 바로 걸 수 있도록 원본 입력과 함께 계산된 네 기둥과 오행 분포도 같이 저장합니다.
 
@@ -102,7 +151,7 @@ npm run build
 
 `/admin` 의 `CSV 내보내기` 는 `GET /api/admin/submissions?format=csv` 입니다. 목록과 같은 관리자 세션을 요구합니다.
 
-배포처(OpenAI Sites)의 D1 은 플랫폼이 잡아 주는 것이라 `wrangler d1 execute` 나 `wrangler d1 export` 로 붙을 수 없습니다. **이 내보내기가 데이터를 밖으로 빼내는 유일한 수단입니다.** 백업도, 매칭을 돌릴 자료를 만드는 것도 여기서 시작합니다.
+지금처럼 Cloudflare 로 직접 배포하면 `wrangler d1 execute` 로도 붙을 수 있지만, 매칭을 돌릴 자료를 만들 때는 이쪽이 편합니다. OpenAI Sites 로 배포한 경우에는 플랫폼이 잡아 주는 D1 이라 wrangler 로 붙을 수 없어서 **이 내보내기가 자료를 빼내는 유일한 수단입니다.**
 
 - 쪽 넘김과 무관하게 전체를 내려보냅니다 (상한 10,000건).
 - 화면 표에 없는 `calendar_type`, `consent_agreed_at` 까지 담습니다. 나중에 매칭을 돌릴 때 아쉬운 열이 없게 하려는 것입니다.

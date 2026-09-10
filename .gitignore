@@ -28,6 +28,8 @@ yarn-error.log*
 
 # local environment
 .env*
+# 값이 아니라 어떤 항목이 필요한지 알리는 파일이라 예시는 커밋한다.
+!.env.example
 
 # deployment and generated files
 .vercel
