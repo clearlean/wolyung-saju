@@ -3,6 +3,7 @@ export const FORM_STEPS = [
   'birthday',
   'birth-time',
   'gender',
+  'university',
   'instagram',
 ] as const;
 
@@ -11,6 +12,20 @@ export type Gender = 'male' | 'female' | '';
 export type FormStep = (typeof FORM_STEPS)[number];
 export type FlowScreen = 'intro' | FormStep | 'loading' | 'result';
 export type Direction = 'forward' | 'backward';
+
+/**
+ * 받는 학교.
+ *
+ * 연고대 에브리타임에 홍보하는 서비스라 두 곳만 받는다. 화면 문구가 아니라
+ * 코드값을 저장하는 것은, 나중에 학교로 매칭을 걸 때 표기가 흔들리지 않게
+ * 하려는 것이다. 학교를 늘리려면 이 표에 한 줄 더하면 된다.
+ */
+export const UNIVERSITIES = [
+  { value: 'yonsei', label: '연세대' },
+  { value: 'korea', label: '고려대' },
+] as const;
+
+export type University = (typeof UNIVERSITIES)[number]['value'] | '';
 
 /** 폼에서 모은 값. 저장과 사주 계산의 입력이 된다. */
 export type SubmissionDraft = {
@@ -22,6 +37,9 @@ export type SubmissionDraft = {
   birthTime: string;
   unknownTime: boolean;
   gender: Exclude<Gender, ''>;
+  /** 고르기 전에는 빈 문자열. */
+  university: University;
+  department: string;
   /** @ 없이 저장한다. */
   instagram: string;
   /** 개인정보 수집·이용 동의. 체크하지 않으면 제출할 수 없다. */
@@ -82,6 +100,16 @@ export const FIELD_COPY = {
     maleLabel: '남성',
     femaleLabel: '여성',
   },
+  university: {
+    label: '재학중인 대학교',
+    helper: '지금은 연세대와 고려대에서만 받고 있습니다.',
+  },
+  department: {
+    label: '학과',
+    placeholder: '학과를 입력해 주세요. (예: 경영학과)',
+    ariaLabel: '학과',
+    maxLength: 30,
+  },
   instagram: {
     label: '인스타그램 아이디',
     placeholder: '@ 없이 입력해 주세요',
@@ -131,6 +159,7 @@ const ERROR_MESSAGES = {
   birthday: '생년월일 8자리를 입력해 주세요.',
   'birth-time': '태어난 시간을 입력하거나 시간 모름을 선택해 주세요.',
   gender: '성별을 선택해 주세요.',
+  university: '재학중인 대학교를 선택해 주세요.',
   instagram: '인스타그램 아이디를 입력해 주세요.',
   loading: '필수 항목입니다.',
   result: '필수 항목입니다.',
@@ -144,5 +173,11 @@ export function getErrorMessage(screen: Exclude<FlowScreen, 'intro'>) {
 export const DETAIL_ERROR_MESSAGES = {
   birthdayNotReal: '실제로 있는 날짜를 입력해 주세요.',
   birthTimeRange: '00:00 부터 23:59 사이로 입력해 주세요.',
+  departmentRequired: '학과를 입력해 주세요.',
   instagramFormat: '영문·숫자·마침표·밑줄만 쓸 수 있습니다.',
 } as const;
+
+/** 저장된 코드값을 화면에 보여 줄 이름으로 바꾼다. */
+export function getUniversityLabel(value: string): string {
+  return UNIVERSITIES.find((item) => item.value === value)?.label ?? value;
+}

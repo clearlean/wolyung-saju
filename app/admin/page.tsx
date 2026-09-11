@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { getUniversityLabel } from '@/lib/wolyung-flow';
 
 type SubmissionRow = {
   instagram: string;
@@ -18,6 +19,8 @@ type SubmissionRow = {
   birth_time: string | null;
   hour_known: number;
   gender: string;
+  university: string | null;
+  department: string | null;
   year_pillar: string;
   month_pillar: string;
   day_pillar: string;
@@ -219,6 +222,8 @@ export default function AdminPage() {
                     <th scope="col">이름</th>
                     <th scope="col">인스타</th>
                     <th scope="col">성별</th>
+                    <th scope="col">학교</th>
+                    <th scope="col">학과</th>
                     <th scope="col">생년월일</th>
                     <th scope="col">태어난 시간</th>
                     <th scope="col">사주</th>
@@ -233,6 +238,12 @@ export default function AdminPage() {
                       <td>{row.name}</td>
                       <td>@{row.instagram}</td>
                       <td>{row.gender === 'male' ? '남' : '여'}</td>
+                      <td>
+                        {row.university
+                          ? getUniversityLabel(row.university)
+                          : '—'}
+                      </td>
+                      <td>{row.department ?? '—'}</td>
                       <td>{row.birth_date}</td>
                       <td>{row.hour_known ? row.birth_time : '모름'}</td>
                       <td className="admin-pillars">

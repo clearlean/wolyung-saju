@@ -35,6 +35,7 @@ import {
   HERO_FOOTER_POINTS,
   READING_POINTS,
   RESULT_COPY,
+  UNIVERSITIES,
   getErrorMessage,
   type Direction,
   type FlowScreen,
@@ -49,6 +50,8 @@ const EMPTY_DRAFT: SubmissionDraft = {
   birthTime: '',
   unknownTime: false,
   gender: 'female',
+  university: '',
+  department: '',
   instagram: '',
   consentAgreed: false,
 };
@@ -477,6 +480,16 @@ function BirthInfoForm({
       return genderPicked ? null : getErrorMessage(screen);
     }
 
+    if (screen === 'university') {
+      if (!draft.university) {
+        return getErrorMessage(screen);
+      }
+
+      return draft.department.trim().length > 0
+        ? null
+        : DETAIL_ERROR_MESSAGES.departmentRequired;
+    }
+
     if (screen === 'instagram') {
       if (normalizeInstagram(draft.instagram).length === 0) {
         return getErrorMessage(screen);
@@ -643,7 +656,7 @@ function BirthInfoForm({
                 {FIELD_COPY.gender.label}
               </legend>
               <div className="gender-grid">
-                <GenderButton
+                <PickerButton
                   active={genderPicked && draft.gender === 'male'}
                   label={FIELD_COPY.gender.maleLabel}
                   onClick={() => {
@@ -651,7 +664,7 @@ function BirthInfoForm({
                     update({ gender: 'male' });
                   }}
                 />
-                <GenderButton
+                <PickerButton
                   active={genderPicked && draft.gender === 'female'}
                   label={FIELD_COPY.gender.femaleLabel}
                   onClick={() => {
@@ -661,6 +674,48 @@ function BirthInfoForm({
                 />
               </div>
             </fieldset>
+          )}
+
+          {screen === 'university' && (
+            <>
+              <fieldset>
+                <legend className="gender-legend">
+                  {FIELD_COPY.university.label}
+                </legend>
+                <div className="gender-grid">
+                  {UNIVERSITIES.map((item) => (
+                    <PickerButton
+                      key={item.value}
+                      active={draft.university === item.value}
+                      label={item.label}
+                      onClick={() => update({ university: item.value })}
+                    />
+                  ))}
+                </div>
+                <p className="university-helper">
+                  {FIELD_COPY.university.helper}
+                </p>
+              </fieldset>
+
+              <div className="university-department">
+                <FieldBlock label={FIELD_COPY.department.label}>
+                  <input
+                    value={draft.department}
+                    onChange={(event) =>
+                      update({
+                        department: event.target.value.slice(
+                          0,
+                          FIELD_COPY.department.maxLength,
+                        ),
+                      })
+                    }
+                    placeholder={FIELD_COPY.department.placeholder}
+                    aria-label={FIELD_COPY.department.ariaLabel}
+                    className="form-line-input"
+                  />
+                </FieldBlock>
+              </div>
+            </>
           )}
 
           {screen === 'instagram' && (
@@ -953,7 +1008,7 @@ function ChoiceButton({
   );
 }
 
-function GenderButton({
+function PickerButton({
   active,
   label,
   onClick,

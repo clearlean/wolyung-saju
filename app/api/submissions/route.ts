@@ -52,7 +52,9 @@ const CREATE_SUBMISSIONS_SQL =
   'hour_pillar TEXT, ' +
   'element_counts TEXT NOT NULL, ' +
   'consent_version TEXT, ' +
-  'consent_agreed_at TEXT)';
+  'consent_agreed_at TEXT, ' +
+  'university TEXT, ' +
+  'department TEXT)';
 
 const CREATE_ATTEMPTS_SQL =
   'CREATE TABLE IF NOT EXISTS submission_attempts (' +
@@ -73,15 +75,20 @@ const CREATE_INDEX_SQL = [
 const LATER_COLUMNS: readonly { name: string; definition: string }[] = [
   { name: 'consent_version', definition: 'TEXT' },
   { name: 'consent_agreed_at', definition: 'TEXT' },
+  { name: 'university', definition: 'TEXT' },
+  { name: 'department', definition: 'TEXT' },
 ];
+
+/** 받는 학교. 화면의 UNIVERSITIES 와 같은 코드값이어야 한다. */
+const ALLOWED_UNIVERSITIES = new Set(['yonsei', 'korea']);
 
 const UPSERT_SQL = `
 INSERT INTO submissions (
   id, instagram_key, created_at, updated_at, name, birth_date, calendar_type,
   birth_time, hour_known, gender, instagram,
   year_pillar, month_pillar, day_pillar, hour_pillar, element_counts,
-  consent_version, consent_agreed_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  consent_version, consent_agreed_at, university, department
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(instagram_key) DO UPDATE SET
   updated_at = excluded.updated_at,
   name = excluded.name,
@@ -97,7 +104,9 @@ ON CONFLICT(instagram_key) DO UPDATE SET
   hour_pillar = excluded.hour_pillar,
   element_counts = excluded.element_counts,
   consent_version = excluded.consent_version,
-  consent_agreed_at = excluded.consent_agreed_at`;
+  consent_agreed_at = excluded.consent_agreed_at,
+  university = excluded.university,
+  department = excluded.department`;
 
 /** 스키마 준비는 아이솔레이트마다 한 번만 한다. */
 let schemaReady: Promise<void> | null = null;
@@ -198,6 +207,8 @@ type IncomingBody = {
   birthTime?: unknown;
   hourKnown?: unknown;
   gender?: unknown;
+  university?: unknown;
+  department?: unknown;
   instagram?: unknown;
   consentAgreed?: unknown;
   consentVersion?: unknown;
@@ -267,6 +278,12 @@ export async function POST(request: Request): Promise<Response> {
     body.calendarType === 'solar' || body.calendarType === 'lunar'
       ? body.calendarType
       : null;
+  const university =
+    typeof body.university === 'string' &&
+    ALLOWED_UNIVERSITIES.has(body.university)
+      ? body.university
+      : null;
+  const department = asTrimmedString(body.department, 30);
   const yearPillar = asTrimmedString(body.pillars?.year, 4);
   const monthPillar = asTrimmedString(body.pillars?.month, 4);
   const dayPillar = asTrimmedString(body.pillars?.day, 4);
@@ -277,6 +294,8 @@ export async function POST(request: Request): Promise<Response> {
     !birthDate ||
     !gender ||
     !calendarType ||
+    !university ||
+    !department ||
     !yearPillar ||
     !monthPillar ||
     !dayPillar ||
@@ -330,6 +349,8 @@ export async function POST(request: Request): Promise<Response> {
         JSON.stringify(body.elementCounts ?? {}),
         asTrimmedString(body.consentVersion, 20) ?? CONSENT_VERSION,
         now,
+        university,
+        department,
       )
       .run();
 

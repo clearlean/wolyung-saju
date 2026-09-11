@@ -99,6 +99,8 @@ export type SubmissionPayload = {
   birthTime: string | null;
   hourKnown: boolean;
   gender: SubmissionDraft['gender'];
+  university: SubmissionDraft['university'];
+  department: string;
   instagram: string;
   consentAgreed: boolean;
   consentVersion: string;
@@ -137,6 +139,8 @@ export function toSubmissionPayload(
     birthTime: draft.unknownTime ? null : draft.birthTime,
     hourKnown: !draft.unknownTime,
     gender: draft.gender,
+    university: draft.university,
+    department: draft.department.trim(),
     instagram: normalizeInstagram(draft.instagram),
     consentAgreed: draft.consentAgreed,
     consentVersion: CONSENT_VERSION,
