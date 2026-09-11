@@ -5,15 +5,29 @@ import {
   Check,
   ChevronLeft,
   Circle,
-  Menu,
+  Heart,
   MoonStar,
   Sparkles,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { LoveTopics } from '@/components/love-topics';
+import { SajuChartTable } from '@/components/saju-chart-table';
 import { Button } from '@/components/ui/button';
+import { CONSENT_COPY, CONTACT_COPY } from '@/lib/consent';
+import { buildLoveReading } from '@/lib/love-reading';
+import { calculateSaju, type SajuChart } from '@/lib/saju/pillars';
 import {
+  isValidInstagram,
+  normalizeInstagram,
+  parseBirthTime,
+  parseBirthday,
+  saveSubmission,
+  toSajuInput,
+} from '@/lib/submission';
+import {
+  DETAIL_ERROR_MESSAGES,
   FIELD_COPY,
   FORM_COPY,
   FORM_STEPS,
@@ -21,20 +35,71 @@ import {
   HERO_FOOTER_POINTS,
   READING_POINTS,
   RESULT_COPY,
-  type CalendarType,
+  UNIVERSITIES,
+  getErrorMessage,
   type Direction,
   type FlowScreen,
   type FormStep,
-  type Gender,
-  getErrorMessage,
+  type SubmissionDraft,
 } from '@/lib/wolyung-flow';
+
+const EMPTY_DRAFT: SubmissionDraft = {
+  name: '',
+  birthday: '',
+  calendarType: 'solar',
+  birthTime: '',
+  unknownTime: false,
+  gender: 'female',
+  university: '',
+  department: '',
+  instagram: '',
+  consentAgreed: false,
+};
 
 export default function Home() {
   const [screen, setScreen] = useState<FlowScreen>('intro');
   const [direction, setDirection] = useState<Direction>('forward');
+  const [draft, setDraft] = useState<SubmissionDraft>(EMPTY_DRAFT);
+  // 성별은 고르기 전까지 아무 버튼도 눌린 상태가 아니어야 해서 따로 둔다.
+  const [genderPicked, setGenderPicked] = useState(false);
+  const [chart, setChart] = useState<SajuChart | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
   const previousScreen = useRef<FlowScreen>('intro');
 
+  const goToScreen = useCallback(
+    (nextScreen: FlowScreen, mode: 'push' | 'replace' = 'push') => {
+      const nextDirection =
+        getScreenIndex(nextScreen) < getScreenIndex(previousScreen.current)
+          ? 'backward'
+          : 'forward';
+      const nextUrl =
+        nextScreen === 'intro'
+          ? `${window.location.pathname}${window.location.search}`
+          : `#_q=${nextScreen}`;
+
+      if (mode === 'replace') {
+        window.history.replaceState({ wolyungStep: nextScreen }, '', nextUrl);
+      } else {
+        window.history.pushState({ wolyungStep: nextScreen }, '', nextUrl);
+      }
+
+      previousScreen.current = nextScreen;
+      setDirection(nextDirection);
+      setScreen(nextScreen);
+    },
+    [],
+  );
+
   useEffect(() => {
+    // 새로고침으로 들어오면 입력값이 없으므로 언제나 처음 화면에서 시작한다.
+    if (window.location.hash) {
+      window.history.replaceState(
+        { wolyungStep: 'intro' },
+        '',
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+
     const syncScreenState = () => {
       const nextScreen = getScreenFromHash();
       setDirection(
@@ -46,7 +111,6 @@ export default function Home() {
       setScreen(nextScreen);
     };
 
-    syncScreenState();
     window.addEventListener('popstate', syncScreenState);
     window.addEventListener('hashchange', syncScreenState);
 
@@ -56,49 +120,78 @@ export default function Home() {
     };
   }, []);
 
-  const openForm = () => {
-    goToScreen('name');
-  };
+  /**
+   * 마지막 단계에서 부른다. 사주를 세우고 저장을 걸어 둔 뒤 로딩 화면으로 넘어간다.
+   * 입력이 온전하지 않으면 false 를 돌려주어 폼이 오류를 띄우게 한다.
+   */
+  const beginReading = useCallback(
+    (honeypot: string): boolean => {
+      const sajuInput = toSajuInput(draft);
 
-  const goToScreen = (
-    nextScreen: FlowScreen,
-    mode: 'push' | 'replace' = 'push',
-  ) => {
-    const nextDirection =
-      getScreenIndex(nextScreen) < getScreenIndex(previousScreen.current)
-        ? 'backward'
-        : 'forward';
-    const nextUrl =
-      nextScreen === 'intro'
-        ? `${window.location.pathname}${window.location.search}`
-        : `#_q=${nextScreen}`;
+      if (!sajuInput) {
+        return false;
+      }
 
-    if (mode === 'replace') {
-      window.history.replaceState({ wolyungStep: nextScreen }, '', nextUrl);
-    } else {
-      window.history.pushState({ wolyungStep: nextScreen }, '', nextUrl);
+      const nextChart = calculateSaju(sajuInput);
+      setChart(nextChart);
+
+      void saveSubmission(draft, nextChart, honeypot).then((result) => {
+        setSaveFailed(!result.ok);
+      });
+
+      goToScreen('loading');
+      return true;
+    },
+    [draft, goToScreen],
+  );
+
+  // 로딩 화면을 잠깐 보여 준 뒤 풀이로 넘어간다.
+  useEffect(() => {
+    if (screen !== 'loading' || !chart) {
+      return;
     }
 
-    previousScreen.current = nextScreen;
-    setDirection(nextDirection);
-    setScreen(nextScreen);
-  };
+    const timer = window.setTimeout(() => {
+      goToScreen('result', 'replace');
+    }, 1400);
 
-  const handleBack = () => {
-    goToScreen(getPreviousScreen(screen), 'replace');
+    return () => window.clearTimeout(timer);
+  }, [chart, goToScreen, screen]);
+
+  const restart = () => {
+    setDraft(EMPTY_DRAFT);
+    setGenderPicked(false);
+    setChart(null);
+    setSaveFailed(false);
+    goToScreen('intro', 'replace');
   };
 
   return (
     <main className="min-h-dvh bg-[#090d1c] text-white">
       <section className="mx-auto min-h-dvh w-full max-w-[450px] overflow-hidden bg-[#0b1024] shadow-[0_0_70px_rgb(3_7_18/55%)] sm:rounded-[28px]">
-        {screen === 'intro' ? (
-          <HeroScreen onStart={openForm} />
-        ) : (
+        {screen === 'intro' && (
+          <HeroScreen onStart={() => goToScreen('name')} />
+        )}
+
+        {screen === 'result' && chart && (
+          <ResultScreen
+            chart={chart}
+            draft={draft}
+            onRestart={restart}
+            saveFailed={saveFailed}
+          />
+        )}
+
+        {screen !== 'intro' && screen !== 'result' && (
           <BirthInfoForm
             direction={direction}
-            onBack={handleBack}
-            onReset={() => goToScreen('intro', 'replace')}
+            draft={draft}
+            genderPicked={genderPicked}
+            onBack={() => goToScreen(getPreviousScreen(screen), 'replace')}
+            onDraftChange={setDraft}
+            onGenderPicked={() => setGenderPicked(true)}
             onStepChange={goToScreen}
+            onSubmit={beginReading}
             screen={screen}
           />
         )}
@@ -113,7 +206,7 @@ function getScreenFromHash(): FlowScreen {
   if (
     FORM_STEPS.includes(hashValue as FormStep) ||
     hashValue === 'loading' ||
-    hashValue === 'complete'
+    hashValue === 'result'
   ) {
     return hashValue as FlowScreen;
   }
@@ -127,10 +220,10 @@ function getScreenIndex(screen: FlowScreen) {
   }
 
   if (screen === 'loading') {
-    return formSteps.length;
+    return FORM_STEPS.length;
   }
 
-  if (screen === 'complete') {
+  if (screen === 'result') {
     return FORM_STEPS.length + 1;
   }
 
@@ -138,17 +231,13 @@ function getScreenIndex(screen: FlowScreen) {
 }
 
 function getPreviousScreen(screen: FlowScreen): FlowScreen {
-  if (screen === 'loading' || screen === 'complete') {
-    return 'gender';
+  if (screen === 'loading' || screen === 'result') {
+    return FORM_STEPS[FORM_STEPS.length - 1];
   }
 
   const currentIndex = FORM_STEPS.indexOf(screen as FormStep);
 
-  if (currentIndex > 0) {
-    return FORM_STEPS[currentIndex - 1];
-  }
-
-  return 'intro';
+  return currentIndex > 0 ? FORM_STEPS[currentIndex - 1] : 'intro';
 }
 
 function HeroScreen({ onStart }: { onStart: () => void }) {
@@ -176,18 +265,12 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
             {HERO_COPY.logoText}
           </span>
         </a>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="메뉴 열기"
-          className="rounded-full bg-white/8 text-white shadow-[0_8px_24px_rgb(0_0_0/25%)] backdrop-blur-md hover:bg-white/16 hover:text-white"
-        >
-          <Menu className="size-6" />
-        </Button>
+        <ContactMenu />
       </header>
 
       <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24">
         <div className="mb-6 text-center">
+          <p className="hero-audience-badge">{HERO_COPY.audienceBadge}</p>
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
             {HERO_COPY.brand}
           </p>
@@ -239,91 +322,206 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
   );
 }
 
+/**
+ * 첫 화면 오른쪽 위 `문의` 버튼.
+ *
+ * 개인정보 정정·삭제 요청을 받을 창구를 어디서든 찾을 수 있어야 해서, 동의
+ * 전문 안에만 두지 않고 첫 화면에도 꺼내 뒀다.
+ */
+function ContactMenu() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
+  return (
+    <div className="contact-menu">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls="contact-panel"
+        aria-label={open ? CONTACT_COPY.closeLabel : CONTACT_COPY.openLabel}
+        className="h-10 rounded-full bg-white/8 px-4 text-[0.9rem] font-bold text-white shadow-[0_8px_24px_rgb(0_0_0/25%)] backdrop-blur-md hover:bg-white/16 hover:text-white"
+      >
+        {CONTACT_COPY.buttonLabel}
+      </Button>
+
+      {open && (
+        <>
+          {/* 패널 바깥을 누르면 닫힌다. */}
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            onClick={() => setOpen(false)}
+            className="contact-scrim"
+          />
+          {/* 초점을 가두지 않으므로 dialog 가 아니라 여닫이(disclosure)다. */}
+          <div id="contact-panel" className="contact-panel">
+            <p className="contact-panel-body">
+              {CONTACT_COPY.bodyBefore}
+              <a
+                href={CONTACT_COPY.handleHref}
+                target="_blank"
+                rel="noreferrer"
+                className="contact-panel-handle"
+              >
+                {CONTACT_COPY.handle}
+              </a>
+              {CONTACT_COPY.bodyAfter}
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function BirthInfoForm({
   direction,
+  draft,
+  genderPicked,
   onBack,
-  onReset,
+  onDraftChange,
+  onGenderPicked,
   onStepChange,
+  onSubmit,
   screen,
 }: {
   direction: Direction;
+  draft: SubmissionDraft;
+  genderPicked: boolean;
   onBack: () => void;
-  onReset: () => void;
+  onDraftChange: (draft: SubmissionDraft) => void;
+  onGenderPicked: () => void;
   onStepChange: (screen: FlowScreen, mode?: 'push' | 'replace') => void;
-  screen: Exclude<FlowScreen, 'intro'>;
+  /** 마지막 단계에서 부른다. 입력이 온전하지 않으면 false 를 돌려준다. */
+  onSubmit: (honeypot: string) => boolean;
+  screen: Exclude<FlowScreen, 'intro' | 'result'>;
 }) {
-  const [name, setName] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [calendarType, setCalendarType] = useState<CalendarType>('solar');
-  const [birthTime, setBirthTime] = useState('');
-  const [unknownTime, setUnknownTime] = useState(false);
-  const [gender, setGender] = useState<Gender>('');
   const [error, setError] = useState<{
     message: string;
-    screen: Exclude<FlowScreen, 'intro'>;
+    screen: Exclude<FlowScreen, 'intro' | 'result'>;
   } | null>(null);
+  // 사람에게는 보이지 않는 미끼 항목. 봇이 폼을 통째로 채우면 여기에 값이 들어간다.
+  const [honeypot, setHoneypot] = useState('');
 
   const currentStepIndex = FORM_STEPS.indexOf(screen as FormStep);
   const progress =
     currentStepIndex >= 0 ? currentStepIndex + 1 : FORM_STEPS.length;
   const progressWidth = `${(progress / FORM_STEPS.length) * 100}%`;
   const currentError = error?.screen === screen ? error.message : '';
+  const isLastStep = currentStepIndex === FORM_STEPS.length - 1;
 
-  useEffect(() => {
-    if (screen !== 'loading') {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      onStepChange('complete', 'replace');
-    }, 1300);
-
-    return () => window.clearTimeout(timer);
-  }, [onStepChange, screen]);
+  const update = (patch: Partial<SubmissionDraft>) => {
+    onDraftChange({ ...draft, ...patch });
+    setError(null);
+  };
 
   const handleBirthdayChange = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 8);
     const parts = [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)];
-    setBirthday(parts.filter(Boolean).join('.'));
-    setError(null);
+    update({ birthday: parts.filter(Boolean).join('.') });
   };
 
   const handleBirthTimeChange = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 4);
-    const nextValue =
-      digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
-    setBirthTime(nextValue);
-    setError(null);
+    update({
+      birthTime:
+        digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits,
+    });
   };
 
-  const validateCurrentStep = () => {
+  /** 통과하면 null, 막히면 보여 줄 문구를 돌려준다. */
+  const validateCurrentStep = (): string | null => {
     if (screen === 'name') {
-      return name.trim().length > 0;
+      return draft.name.trim().length > 0 ? null : getErrorMessage(screen);
     }
 
     if (screen === 'birthday') {
-      return birthday.length === 10;
+      if (draft.birthday.length !== 10) {
+        return getErrorMessage(screen);
+      }
+
+      return parseBirthday(draft.birthday)
+        ? null
+        : DETAIL_ERROR_MESSAGES.birthdayNotReal;
     }
 
     if (screen === 'birth-time') {
-      return unknownTime || birthTime.length === 5;
+      if (draft.unknownTime) {
+        return null;
+      }
+
+      if (draft.birthTime.length !== 5) {
+        return getErrorMessage(screen);
+      }
+
+      return parseBirthTime(draft.birthTime)
+        ? null
+        : DETAIL_ERROR_MESSAGES.birthTimeRange;
     }
 
     if (screen === 'gender') {
-      return gender !== '';
+      return genderPicked ? null : getErrorMessage(screen);
     }
 
-    return true;
+    if (screen === 'university') {
+      if (!draft.university) {
+        return getErrorMessage(screen);
+      }
+
+      return draft.department.trim().length > 0
+        ? null
+        : DETAIL_ERROR_MESSAGES.departmentRequired;
+    }
+
+    if (screen === 'instagram') {
+      if (normalizeInstagram(draft.instagram).length === 0) {
+        return getErrorMessage(screen);
+      }
+
+      if (!isValidInstagram(draft.instagram)) {
+        return DETAIL_ERROR_MESSAGES.instagramFormat;
+      }
+
+      return draft.consentAgreed ? null : CONSENT_COPY.error;
+    }
+
+    return null;
   };
 
   const handleNext = () => {
-    if (!validateCurrentStep()) {
-      setError({ message: getErrorMessage(screen), screen });
+    const message = validateCurrentStep();
+
+    if (message) {
+      setError({ message, screen });
       return;
     }
 
-    const nextStep = FORM_STEPS[currentStepIndex + 1];
-    onStepChange(nextStep ?? 'loading');
+    if (!isLastStep) {
+      onStepChange(FORM_STEPS[currentStepIndex + 1]);
+      return;
+    }
+
+    if (!onSubmit(honeypot)) {
+      setError({ message: DETAIL_ERROR_MESSAGES.birthdayNotReal, screen });
+    }
   };
 
   return (
@@ -349,34 +547,48 @@ function BirthInfoForm({
         onSubmit={(event) => event.preventDefault()}
         className="birth-form relative z-10 flex min-h-dvh flex-col"
       >
-        {screen !== 'complete' && (
-          <div
-            className="form-progress"
-            aria-label={FORM_COPY.progressLabel(progress, FORM_STEPS.length)}
-          >
-            <span>
-              {progress}/{FORM_STEPS.length}
-            </span>
-            <div className="form-progress-track">
-              <div
-                className="form-progress-bar"
-                style={{ width: progressWidth }}
-              />
-            </div>
+        {/*
+          미끼 항목. 화면에서 감추고 보조기기와 자동완성에서도 빼 두었으므로
+          사람은 채울 일이 없다. 폼을 통째로 훑는 봇만 여기에 값을 넣는다.
+        */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(event) => setHoneypot(event.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="honeypot-field"
+        />
+        <div
+          className="form-progress"
+          aria-label={FORM_COPY.progressLabel(progress, FORM_STEPS.length)}
+        >
+          <span>
+            {progress}/{FORM_STEPS.length}
+          </span>
+          <div className="form-progress-track">
+            <div
+              className="form-progress-bar"
+              style={{ width: progressWidth }}
+            />
           </div>
-        )}
+        </div>
 
         <div key={screen} className={`form-step-panel form-step-${direction}`}>
           {screen === 'name' && (
             <FieldBlock label={FIELD_COPY.name.label}>
               <input
-                value={name}
-                onChange={(event) => {
-                  setName(
-                    event.target.value.slice(0, FIELD_COPY.name.maxLength),
-                  );
-                  setError(null);
-                }}
+                value={draft.name}
+                onChange={(event) =>
+                  update({
+                    name: event.target.value.slice(
+                      0,
+                      FIELD_COPY.name.maxLength,
+                    ),
+                  })
+                }
                 placeholder={FIELD_COPY.name.placeholder}
                 aria-label={FIELD_COPY.name.ariaLabel}
                 className="form-line-input"
@@ -390,27 +602,24 @@ function BirthInfoForm({
               action={
                 <div className="flex items-center gap-5">
                   <ChoiceButton
-                    active={calendarType === 'solar'}
+                    active={draft.calendarType === 'solar'}
                     label={FIELD_COPY.calendar.solarLabel}
-                    onClick={() => {
-                      setCalendarType('solar');
-                      setError(null);
-                    }}
+                    onClick={() => update({ calendarType: 'solar' })}
                   />
                   <ChoiceButton
-                    active={calendarType === 'lunar'}
+                    active={false}
+                    disabled
                     label={FIELD_COPY.calendar.lunarLabel}
-                    onClick={() => {
-                      setCalendarType('lunar');
-                      setError(null);
-                    }}
+                    suffix={FIELD_COPY.calendar.lunarPendingLabel}
+                    onClick={() => undefined}
                   />
                 </div>
               }
+              helper={FIELD_COPY.calendar.lunarPendingNote}
             >
               <input
                 inputMode="numeric"
-                value={birthday}
+                value={draft.birthday}
                 onChange={(event) => handleBirthdayChange(event.target.value)}
                 placeholder={FIELD_COPY.birthday.placeholder}
                 aria-label={FIELD_COPY.birthday.ariaLabel}
@@ -424,20 +633,17 @@ function BirthInfoForm({
               label={FIELD_COPY.birthTime.label}
               action={
                 <ChoiceButton
-                  active={unknownTime}
+                  active={draft.unknownTime}
                   label={FIELD_COPY.birthTime.unknownLabel}
-                  onClick={() => {
-                    setUnknownTime((value) => !value);
-                    setError(null);
-                  }}
+                  onClick={() => update({ unknownTime: !draft.unknownTime })}
                 />
               }
             >
               <input
                 inputMode="numeric"
-                value={birthTime}
+                value={draft.birthTime}
                 onChange={(event) => handleBirthTimeChange(event.target.value)}
-                disabled={unknownTime}
+                disabled={draft.unknownTime}
                 placeholder={FIELD_COPY.birthTime.placeholder}
                 aria-label={FIELD_COPY.birthTime.ariaLabel}
                 className="form-line-input disabled:text-white/35"
@@ -451,53 +657,114 @@ function BirthInfoForm({
                 {FIELD_COPY.gender.label}
               </legend>
               <div className="gender-grid">
-                <GenderButton
-                  active={gender === 'male'}
+                <PickerButton
+                  active={genderPicked && draft.gender === 'male'}
                   label={FIELD_COPY.gender.maleLabel}
                   onClick={() => {
-                    setGender('male');
-                    setError(null);
+                    onGenderPicked();
+                    update({ gender: 'male' });
                   }}
                 />
-                <GenderButton
-                  active={gender === 'female'}
+                <PickerButton
+                  active={genderPicked && draft.gender === 'female'}
                   label={FIELD_COPY.gender.femaleLabel}
                   onClick={() => {
-                    setGender('female');
-                    setError(null);
+                    onGenderPicked();
+                    update({ gender: 'female' });
                   }}
                 />
               </div>
             </fieldset>
           )}
 
+          {screen === 'university' && (
+            <>
+              <fieldset>
+                <legend className="gender-legend">
+                  {FIELD_COPY.university.label}
+                </legend>
+                <div className="gender-grid">
+                  {UNIVERSITIES.map((item) => (
+                    <PickerButton
+                      key={item.value}
+                      active={draft.university === item.value}
+                      label={item.label}
+                      onClick={() => update({ university: item.value })}
+                    />
+                  ))}
+                </div>
+                <p className="university-helper">
+                  {FIELD_COPY.university.helper}
+                </p>
+              </fieldset>
+
+              <div className="university-department">
+                <FieldBlock label={FIELD_COPY.department.label}>
+                  <input
+                    value={draft.department}
+                    onChange={(event) =>
+                      update({
+                        department: event.target.value.slice(
+                          0,
+                          FIELD_COPY.department.maxLength,
+                        ),
+                      })
+                    }
+                    placeholder={FIELD_COPY.department.placeholder}
+                    aria-label={FIELD_COPY.department.ariaLabel}
+                    className="form-line-input"
+                  />
+                </FieldBlock>
+              </div>
+            </>
+          )}
+
+          {screen === 'instagram' && (
+            <FieldBlock
+              label={FIELD_COPY.instagram.label}
+              helper={FIELD_COPY.instagram.helper}
+            >
+              <span className="instagram-input">
+                <span aria-hidden="true">@</span>
+                <input
+                  value={draft.instagram}
+                  onChange={(event) =>
+                    update({
+                      instagram: event.target.value
+                        .replace(/\s/g, '')
+                        .slice(0, FIELD_COPY.instagram.maxLength + 1),
+                    })
+                  }
+                  placeholder={FIELD_COPY.instagram.placeholder}
+                  aria-label={FIELD_COPY.instagram.ariaLabel}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="form-line-input"
+                />
+              </span>
+            </FieldBlock>
+          )}
+
+          {screen === 'instagram' && (
+            <ConsentBlock
+              agreed={draft.consentAgreed}
+              onToggle={() => update({ consentAgreed: !draft.consentAgreed })}
+            />
+          )}
+
           {screen === 'loading' && (
             <output className="result-panel" aria-live="polite">
-              <Sparkles className="size-9 text-[#dbe8ff]" />
+              <Sparkles className="size-9 animate-pulse text-[#dbe8ff]" />
               <p className="result-title">{RESULT_COPY.loading.title}</p>
               <p className="result-copy">{RESULT_COPY.loading.body}</p>
             </output>
           )}
 
-          {screen === 'complete' && (
-            <div className="result-panel">
-              <MoonStar className="size-10 text-[#dbe8ff]" />
-              <p className="result-title">{RESULT_COPY.complete.title}</p>
-              <p className="result-copy">{RESULT_COPY.complete.body}</p>
-              <Button
-                type="button"
-                onClick={onReset}
-                className="next-button mt-7 w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
-              >
-                {FORM_COPY.resetLabel}
-              </Button>
-            </div>
-          )}
-
           {currentError && <p className="form-error">{currentError}</p>}
         </div>
 
-        {screen !== 'loading' && screen !== 'complete' && (
+        {screen !== 'loading' && (
           <div className="form-bottom-action">
             <Button
               type="button"
@@ -505,9 +772,7 @@ function BirthInfoForm({
               className="next-button w-full bg-[linear-gradient(90deg,#d9e7ff,#ffffff_52%,#dce9ff)] font-extrabold text-[#111b34] hover:brightness-105"
             >
               <Sparkles className="size-5" data-icon="inline-start" />
-              {screen === 'gender'
-                ? FORM_COPY.submitLabel
-                : FORM_COPY.nextLabel}
+              {isLastStep ? FORM_COPY.submitLabel : FORM_COPY.nextLabel}
             </Button>
           </div>
         )}
@@ -516,33 +781,209 @@ function BirthInfoForm({
   );
 }
 
+function ResultScreen({
+  chart,
+  draft,
+  onRestart,
+  saveFailed,
+}: {
+  chart: SajuChart;
+  draft: SubmissionDraft;
+  onRestart: () => void;
+  saveFailed: boolean;
+}) {
+  const [requested, setRequested] = useState(false);
+  const topics = useMemo(
+    () => buildLoveReading(chart, draft.name),
+    [chart, draft.name],
+  );
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const handle = normalizeInstagram(draft.instagram);
+
+  return (
+    <div className="result-page relative min-h-dvh">
+      {/*
+        배경 이미지는 화면 위쪽 띠 안에만 둔다. 문서 전체 높이에 걸친 블러 레이어는
+        스크롤할 때마다 다시 합성돼서 모바일에서 눈에 띄게 버벅인다.
+      */}
+      <div className="result-backdrop" aria-hidden="true">
+        <img
+          src="/astrology-woman.png"
+          alt=""
+          className="form-backdrop-image absolute inset-0 h-full w-full object-cover blur-[10px]"
+        />
+        <div className="result-backdrop-veil" />
+        <div className="stars-layer" />
+      </div>
+
+      <div className="result-screen relative z-10">
+        <button
+          type="button"
+          onClick={onRestart}
+          aria-label={FORM_COPY.resetLabel}
+          className="absolute left-0 top-0 grid size-11 place-items-center rounded-full text-white transition hover:bg-white/10"
+        >
+          <ChevronLeft className="size-8 stroke-[2.5]" />
+        </button>
+
+        <header className="result-header">
+          <p className="result-brand">{HERO_COPY.brand}</p>
+          <h1 className="result-heading">
+            {draft.name.trim() || '그대'} 님의 연애운
+          </h1>
+          <p className="result-subject">
+            {draft.birthday}
+            {draft.unknownTime ? ' · 시간 미상' : ` · ${draft.birthTime}`}
+            {` · ${draft.gender === 'male' ? '남성' : '여성'}`}
+            {handle ? ` · @${handle}` : ''}
+          </p>
+        </header>
+
+        <section className="result-section">
+          <h2 className="result-section-title">{RESULT_COPY.chart.title}</h2>
+          <p className="result-section-caption">{RESULT_COPY.chart.caption}</p>
+          <SajuChartTable chart={chart} />
+        </section>
+
+        <section className="result-section">
+          <h2 className="result-section-title">{RESULT_COPY.reading.title}</h2>
+          <p className="result-section-caption">
+            {RESULT_COPY.reading.caption}
+          </p>
+          <LoveTopics topics={topics} />
+        </section>
+
+        <div className="result-cta">
+          <Button
+            type="button"
+            disabled={requested}
+            onClick={() => setRequested(true)}
+            className="next-button w-full bg-[linear-gradient(90deg,#f0d7a8,#fff6e2_52%,#efd6a6)] font-extrabold text-[#2a1a16] hover:brightness-105 disabled:opacity-100"
+          >
+            <Heart className="size-5" data-icon="inline-start" />
+            {requested ? '연분을 찾는 중입니다' : RESULT_COPY.cta.label}
+          </Button>
+
+          {requested ? (
+            <p className="result-cta-note result-cta-done">
+              신청이 접수되었습니다. 연분이 준비되면
+              {handle ? ` 인스타그램 @${handle} 으로 ` : ' 인스타그램으로 '}
+              연락드립니다.
+            </p>
+          ) : (
+            <p className="result-cta-note">{RESULT_COPY.cta.note}</p>
+          )}
+
+          {saveFailed && (
+            <p className="result-cta-warning">
+              신청서를 저장하지 못했습니다. 풀이는 그대로 보실 수 있지만, 매칭
+              신청은 잠시 뒤 다시 시도해 주세요.
+            </p>
+          )}
+
+          <p className="result-disclaimer">{RESULT_COPY.disclaimer}</p>
+
+          <button type="button" onClick={onRestart} className="result-restart">
+            {FORM_COPY.resetLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 개인정보 수집·이용 동의.
+ *
+ * 체크박스에는 무엇에 동의하는지 한 줄로 적고, 전문은 눌러서 펼치게 한다.
+ * 스텝을 하나 더 만들지 않은 것은 모바일에서 단계가 늘수록 이탈이 커지기 때문이다.
+ */
+function ConsentBlock({
+  agreed,
+  onToggle,
+}: {
+  agreed: boolean;
+  onToggle: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="consent-block">
+      <label className="consent-check">
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={onToggle}
+          className="consent-checkbox"
+        />
+        <span>{CONSENT_COPY.checkboxLabel}</span>
+      </label>
+
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        aria-controls="consent-detail"
+        className="consent-toggle"
+      >
+        {expanded ? CONSENT_COPY.collapseLabel : CONSENT_COPY.expandLabel}
+      </button>
+
+      <div id="consent-detail" className="consent-detail" hidden={!expanded}>
+        <h2 className="consent-detail-title">{CONSENT_COPY.title}</h2>
+        <dl>
+          {CONSENT_COPY.sections.map((section) => (
+            <div key={section.heading} className="consent-row">
+              <dt>{section.heading}</dt>
+              <dd>{section.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  );
+}
+
 function FieldBlock({
   label,
   action,
+  helper,
   children,
 }: {
   label: string;
   action?: ReactNode;
+  helper?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="form-field">
-      <span className="form-field-header">
-        <span className="form-field-label">{label}</span>
-        {action}
-      </span>
-      {children}
+    <div className="form-field-group">
+      <div className="form-field">
+        <span className="form-field-header">
+          <span className="form-field-label">{label}</span>
+          {action}
+        </span>
+        {children}
+      </div>
+      {helper && <p className="form-field-helper">{helper}</p>}
     </div>
   );
 }
 
 function ChoiceButton({
   active,
+  disabled,
   label,
+  suffix,
   onClick,
 }: {
   active: boolean;
+  disabled?: boolean;
   label: string;
+  suffix?: string;
   onClick: () => void;
 }) {
   const Icon = active ? Check : Circle;
@@ -551,8 +992,9 @@ function ChoiceButton({
     <button
       type="button"
       aria-pressed={active}
+      disabled={disabled}
       onClick={onClick}
-      className="choice-button"
+      className="choice-button disabled:opacity-45"
     >
       <span
         className={`choice-icon ${
@@ -562,11 +1004,12 @@ function ChoiceButton({
         <Icon className="choice-icon-svg" />
       </span>
       {label}
+      {suffix && <span className="choice-suffix">{suffix}</span>}
     </button>
   );
 }
 
-function GenderButton({
+function PickerButton({
   active,
   label,
   onClick,

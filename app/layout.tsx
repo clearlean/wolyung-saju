@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: '월영아씨 사주 소개팅',
-  description: '왠지 끌리는 사람에게는 이유가 있습니다. 사주 기반 궁합과 관계 성향으로 시작하는 프리미엄 소개팅.',
+  description:
+    '왠지 끌리는 사람에게는 이유가 있습니다. 사주 기반 궁합과 관계 성향으로 시작하는 프리미엄 소개팅.',
 };
 
 export default function RootLayout({

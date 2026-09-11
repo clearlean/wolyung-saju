@@ -51,8 +51,8 @@
 
 body {
   font-family:
-    Pretendard, var(--font-geist-sans), 'Apple SD Gothic Neo',
-    'Noto Sans KR', Arial, Helvetica, sans-serif;
+    Pretendard, var(--font-geist-sans), 'Apple SD Gothic Neo', 'Noto Sans KR',
+    Arial, Helvetica, sans-serif;
 }
 
 :root {
@@ -140,11 +140,31 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 12% 17%, rgb(255 255 255 / 0.95) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 82% 12%, rgb(255 255 255 / 0.9) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 63% 23%, rgb(177 205 255 / 0.95) 0 1.5px, transparent 2.4px),
-    radial-gradient(circle at 32% 34%, rgb(255 255 255 / 0.65) 0 1px, transparent 1.8px),
-    radial-gradient(circle at 90% 42%, rgb(255 255 255 / 0.75) 0 1px, transparent 1.8px);
+    radial-gradient(
+      circle at 12% 17%,
+      rgb(255 255 255 / 0.95) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 82% 12%,
+      rgb(255 255 255 / 0.9) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 63% 23%,
+      rgb(177 205 255 / 0.95) 0 1.5px,
+      transparent 2.4px
+    ),
+    radial-gradient(
+      circle at 32% 34%,
+      rgb(255 255 255 / 0.65) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 90% 42%,
+      rgb(255 255 255 / 0.75) 0 1px,
+      transparent 1.8px
+    );
   pointer-events: none;
 }
 
@@ -366,11 +386,17 @@ body {
 
 .form-bottom-action {
   position: absolute;
-  inset-x: 0;
+  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 2;
   padding: 1.55rem 21px max(14px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, transparent, rgb(4 5 9 / 0.78) 30%, rgb(4 5 9 / 0.96));
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(4 5 9 / 0.78) 30%,
+    rgb(4 5 9 / 0.96)
+  );
 }
 
 .result-panel {
@@ -500,4 +526,805 @@ body {
     animation: none;
     transition-duration: 1ms;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * 폼 보조 문구
+ * ------------------------------------------------------------------ */
+
+.form-field-group {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.form-field-helper {
+  color: rgb(206 221 252 / 0.62);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.choice-suffix {
+  margin-left: 0.3rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  padding: 0.1rem 0.36rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.instagram-input {
+  display: flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  color: rgb(255 255 255 / 0.55);
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+/* ------------------------------------------------------------------ *
+ * 결과 화면
+ * ------------------------------------------------------------------ */
+
+.result-screen {
+  position: relative;
+  padding: 4.6rem 21px max(28px, env(safe-area-inset-bottom));
+}
+
+.result-header {
+  text-align: center;
+}
+
+.result-brand {
+  color: #f2e6cb;
+  font-size: 0.96rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.6);
+}
+
+.result-heading {
+  margin-top: 0.5rem;
+  color: white;
+  font-size: 1.92rem;
+  font-weight: 900;
+  line-height: 1.22;
+  text-shadow:
+    0 8px 26px rgb(0 0 0 / 0.6),
+    0 0 22px rgb(120 166 255 / 0.35);
+}
+
+.result-subject {
+  margin-top: 0.7rem;
+  color: rgb(214 228 255 / 0.72);
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.result-section {
+  margin-top: 2.4rem;
+}
+
+.result-section-title {
+  color: white;
+  font-size: 1.16rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.result-section-caption {
+  margin-top: 0.34rem;
+  margin-bottom: 1rem;
+  color: rgb(206 221 252 / 0.6);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------------------ *
+ * 사주 원국 표
+ * ------------------------------------------------------------------ */
+
+.saju-chart {
+  display: grid;
+  gap: 1rem;
+}
+
+.saju-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+.saju-table th {
+  padding-bottom: 0.15rem;
+  color: rgb(224 234 255 / 0.78);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.saju-self-mark {
+  display: inline-block;
+  margin-left: 0.25rem;
+  border-radius: 999px;
+  background: rgb(240 215 168 / 0.92);
+  padding: 0.05rem 0.3rem;
+  color: #2a1a16;
+  font-size: 0.6rem;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
+.saju-cell {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.15rem;
+  min-height: 5.1rem;
+  border: 1.5px solid;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 6px 18px rgb(0 0 0 / 0.3);
+}
+
+.saju-cell-unknown {
+  border-color: rgb(255 255 255 / 0.22);
+  border-style: dashed;
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(255 255 255 / 0.42);
+  box-shadow: none;
+}
+
+.saju-hanja {
+  font-size: 2.05rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.saju-reading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.82;
+}
+
+.saju-note {
+  color: rgb(206 221 252 / 0.6);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* 오행 분포 막대 */
+
+.element-balance {
+  display: grid;
+  gap: 0.42rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  padding-top: 0.9rem;
+}
+
+.element-balance-item {
+  display: grid;
+  grid-template-columns: 1.55rem 1fr 1.1rem;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.element-chip {
+  display: grid;
+  height: 1.55rem;
+  place-items: center;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.element-bar-track {
+  overflow: hidden;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.09);
+}
+
+.element-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 700ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.element-count {
+  color: rgb(224 234 255 / 0.72);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * 연애운 화두 (접이식)
+ * ------------------------------------------------------------------ */
+
+.topic-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.topic-item {
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.04);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.topic-item[data-open='true'] {
+  border-color: rgb(240 215 168 / 0.4);
+  background: rgb(255 255 255 / 0.07);
+}
+
+.topic-trigger {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr 1.1rem;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.95rem 0.9rem;
+  text-align: left;
+}
+
+.topic-index {
+  color: rgb(240 215 168 / 0.75);
+  font-size: 0.78rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-heading {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.topic-title {
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.topic-teaser {
+  color: rgb(206 221 252 / 0.66);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.topic-chevron {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: rgb(224 234 255 / 0.6);
+  transition: transform 220ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.topic-item[data-open='true'] .topic-chevron {
+  transform: rotate(180deg);
+}
+
+.topic-panel {
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+  animation: topic-open 240ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.topic-panel-inner {
+  display: grid;
+  gap: 0.62rem;
+  padding: 0.95rem 0.9rem 1.1rem;
+}
+
+.topic-basis {
+  justify-self: start;
+  border: 1px solid rgb(240 215 168 / 0.3);
+  border-radius: 999px;
+  background: rgb(240 215 168 / 0.1);
+  padding: 0.22rem 0.55rem;
+  color: #f0d7a8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.topic-body {
+  color: rgb(228 236 252 / 0.86);
+  font-size: 0.9rem;
+  font-weight: 550;
+  line-height: 1.66;
+  word-break: keep-all;
+}
+
+@keyframes topic-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * 결과 화면 하단 버튼
+ * ------------------------------------------------------------------ */
+
+.result-cta {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 2.6rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  padding-top: 1.7rem;
+  text-align: center;
+}
+
+.result-cta-note {
+  color: rgb(206 221 252 / 0.6);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.result-cta-done {
+  color: #f0d7a8;
+  font-weight: 700;
+}
+
+.result-cta-warning {
+  border-radius: 10px;
+  background: rgb(126 28 45 / 0.35);
+  padding: 0.6rem 0.7rem;
+  color: #ffd9e0;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.result-disclaimer {
+  margin-top: 0.4rem;
+  color: rgb(206 221 252 / 0.4);
+  font-size: 0.72rem;
+  font-weight: 550;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.result-restart {
+  justify-self: center;
+  padding: 0.5rem 0.9rem;
+  color: rgb(224 234 255 / 0.72);
+  font-size: 0.84rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-panel,
+  .element-bar-fill {
+    animation: none;
+    transition-duration: 1ms;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * 결과 화면 배경
+ *
+ * 풀이 화면은 문서가 길다. 배경 이미지를 화면 전체에 깔고 블러를 걸면 스크롤할
+ * 때마다 그 큰 레이어를 다시 합성해야 해서 눈에 띄게 버벅인다. 그래서 이미지는
+ * 위쪽 띠 안에만 가두고, 그 아래는 단색으로 둔다.
+ * ------------------------------------------------------------------ */
+
+.result-page {
+  background: #070b18;
+}
+
+.result-backdrop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 46vh;
+  overflow: hidden;
+  pointer-events: none;
+  /* 자체 레이어로 올려 두면 아래 내용이 스크롤해도 다시 그리지 않는다. */
+  transform: translateZ(0);
+}
+
+.result-backdrop-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(11 16 31 / 0.72) 0%,
+    rgb(9 13 26 / 0.9) 42%,
+    rgb(7 11 24 / 0.99) 82%,
+    #070b18 100%
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * 첫 화면 문의 버튼
+ * ------------------------------------------------------------------ */
+
+.contact-menu {
+  position: relative;
+}
+
+/*
+ * 패널 바깥을 덮는 판. 배경을 어둡게 깔지 않는 것은 첫 화면 이미지를 가리지
+ * 않으면서 바깥 누름만 받아 내기 위해서다.
+ */
+.contact-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  cursor: default;
+}
+
+.contact-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 40;
+  width: max-content;
+  max-width: min(17rem, calc(100vw - 2.5rem));
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 12px;
+  background: rgb(7 11 24 / 0.94);
+  box-shadow: 0 18px 40px rgb(2 5 16 / 0.55);
+  backdrop-filter: blur(12px);
+  padding: 0.85rem 0.9rem;
+  animation: topic-open 200ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.contact-panel-body {
+  color: rgb(228 237 255 / 0.86);
+  font-size: 0.83rem;
+  font-weight: 550;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.contact-panel-handle {
+  color: #f0d7a8;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/*
+ * 첫 화면 맨 위 대상 안내.
+ *
+ * 배경 사진 위에 얹히는 글씨라, 테두리와 옅은 바탕을 깔아 어떤 부분에 걸쳐도
+ * 읽히게 한다.
+ */
+.hero-audience-badge {
+  display: inline-block;
+  margin-bottom: 0.85rem;
+  border: 1px solid rgb(240 215 168 / 0.5);
+  border-radius: 999px;
+  background: rgb(9 14 30 / 0.5);
+  padding: 0.34rem 0.85rem;
+  color: #f0d7a8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 22px rgb(3 7 18 / 0.4);
+}
+
+/* ------------------------------------------------------------------ *
+ * 재학중인 대학교와 학과
+ * ------------------------------------------------------------------ */
+
+.university-helper {
+  margin-top: 0.7rem;
+  color: rgb(206 221 252 / 0.6);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+/* 학교를 고른 뒤 학과를 적는 순서라 사이를 띄워 두 묶음으로 읽히게 한다. */
+.university-department {
+  margin-top: 1.9rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * 개인정보 수집·이용 동의
+ * ------------------------------------------------------------------ */
+
+.consent-block {
+  display: grid;
+  gap: 0.55rem;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  padding-top: 0.95rem;
+}
+
+.consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: rgb(238 244 255 / 0.92);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.45;
+  cursor: pointer;
+  word-break: keep-all;
+}
+
+.consent-checkbox {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  accent-color: #f0d7a8;
+  cursor: pointer;
+}
+
+.consent-toggle {
+  justify-self: start;
+  color: rgb(206 221 252 / 0.72);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.consent-detail {
+  max-height: 13rem;
+  overflow-y: auto;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 10px;
+  background: rgb(0 0 0 / 0.28);
+  padding: 0.85rem 0.9rem;
+  animation: topic-open 200ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.consent-detail-title {
+  margin-bottom: 0.6rem;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.consent-row {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.42rem 0;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.consent-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.consent-row dt {
+  color: #f0d7a8;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.consent-row dd {
+  color: rgb(224 234 255 / 0.78);
+  font-size: 0.78rem;
+  font-weight: 550;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+/*
+ * 미끼 항목. display:none 은 일부 봇이 걸러 내므로, 화면 밖으로 밀어내는
+ * 방식으로 감춘다.
+ */
+.honeypot-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * 관리자 화면
+ * ------------------------------------------------------------------ */
+
+.admin-page {
+  min-height: 100dvh;
+  padding: 2rem 1.25rem 3rem;
+  background: #070b18;
+  color: #e7edfb;
+}
+
+.admin-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.admin-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.admin-signout,
+.admin-delete {
+  color: rgb(206 221 252 / 0.7);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-delete {
+  color: #ff9db0;
+}
+
+.admin-note {
+  color: rgb(206 221 252 / 0.62);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.admin-login {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 22rem;
+  margin-top: 2rem;
+}
+
+.admin-label {
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.admin-input {
+  height: 2.7rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.06);
+  padding: 0 0.7rem;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.admin-submit {
+  height: 2.7rem;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.admin-error {
+  color: #ff9db0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+  margin-top: 1rem;
+}
+
+.admin-export {
+  border: 1px solid rgb(240 215 168 / 0.45);
+  border-radius: 8px;
+  background: rgb(240 215 168 / 0.1);
+  padding: 0.5rem 0.85rem;
+  color: #f0d7a8;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.admin-export:hover {
+  background: rgb(240 215 168 / 0.18);
+}
+
+.admin-toolbar-note {
+  color: rgb(206 221 252 / 0.55);
+  font-size: 0.78rem;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+  margin-top: 1.1rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 10px;
+}
+
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.admin-page-button {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 8px;
+  padding: 0.42rem 0.9rem;
+  color: rgb(228 237 255 / 0.85);
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+
+.admin-page-button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.admin-page-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.admin-page-state {
+  color: rgb(206 221 252 / 0.62);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.6rem 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.admin-table th {
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(224 234 255 / 0.82);
+  font-weight: 800;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-pillars {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
 }
