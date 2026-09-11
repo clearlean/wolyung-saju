@@ -270,6 +270,7 @@ function HeroScreen({ onStart }: { onStart: () => void }) {
 
       <div className="relative z-10 flex min-h-dvh flex-col justify-end px-5 pb-[104px] pt-24">
         <div className="mb-6 text-center">
+          <p className="hero-audience-badge">{HERO_COPY.audienceBadge}</p>
           <p className="mb-2 text-[1.28rem] font-semibold tracking-[0.06em] text-[#f9f5ea] [text-shadow:0_3px_15px_rgb(0_0_0/70%)]">
             {HERO_COPY.brand}
           </p>

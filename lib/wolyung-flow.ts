@@ -47,6 +47,13 @@ export type SubmissionDraft = {
 };
 
 export const HERO_COPY = {
+  /**
+   * 첫 화면에서 가장 먼저 읽히는 줄.
+   *
+   * 연고대 에브리타임에 올리는 홍보물이라, 받는 학교를 첫 줄에 박아 두어야
+   * 자기 얘기로 읽힌다. 받는 학교가 바뀌면 UNIVERSITIES 와 함께 고친다.
+   */
+  audienceBadge: '연세대 · 고려대 재학생 전용',
   brand: '월영아씨',
   logoMark: '月影',
   logoText: '월영당',

@@ -1015,6 +1015,28 @@ body {
   text-underline-offset: 3px;
 }
 
+/*
+ * 첫 화면 맨 위 대상 안내.
+ *
+ * 배경 사진 위에 얹히는 글씨라, 테두리와 옅은 바탕을 깔아 어떤 부분에 걸쳐도
+ * 읽히게 한다.
+ */
+.hero-audience-badge {
+  display: inline-block;
+  margin-bottom: 0.85rem;
+  border: 1px solid rgb(240 215 168 / 0.5);
+  border-radius: 999px;
+  background: rgb(9 14 30 / 0.5);
+  padding: 0.34rem 0.85rem;
+  color: #f0d7a8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 22px rgb(3 7 18 / 0.4);
+}
+
 /* ------------------------------------------------------------------ *
  * 재학중인 대학교와 학과
  * ------------------------------------------------------------------ */
