@@ -26,6 +26,19 @@ export default defineConfig(async ({ mode }) => {
     // 워커 이름이 배포 주소(<이름>.<계정>.workers.dev)가 된다. 비워 두면
     // package.json 의 이름을 쓴다.
     ...(env.CF_WORKER_NAME ? { name: env.CF_WORKER_NAME } : {}),
+    /*
+     * 커스텀 도메인. 쉼표로 여럿 적을 수 있다. 해당 도메인이 이 Cloudflare
+     * 계정의 영역(zone)으로 들어와 있어야 하고, 배포할 때 DNS 레코드와
+     * 인증서까지 알아서 잡힌다. 비워 두면 workers.dev 주소만 쓴다.
+     */
+    ...(env.CF_CUSTOM_DOMAINS
+      ? {
+          routes: env.CF_CUSTOM_DOMAINS.split(',')
+            .map((pattern) => pattern.trim())
+            .filter(Boolean)
+            .map((pattern) => ({ pattern, custom_domain: true })),
+        }
+      : {}),
     main: 'vinext/server/fetch-handler',
     compatibility_flags: ['nodejs_compat'],
     d1_databases: d1

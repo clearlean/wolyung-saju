@@ -5,8 +5,10 @@
 
 ## 데모
 
-- 운영 중: https://wolyung-saju.suhjoonahn.workers.dev (Cloudflare Workers, D1 은 APAC 리전)
+- 운영 중: https://wolyungdang.com (Cloudflare Workers, D1 은 APAC 리전)
 - 옛 링크: https://wolyung-saju.clearlean01.chatgpt.site (OpenAI Sites, `clearlean01` 계정 소유)
+
+커스텀 도메인을 붙이면서 `*.workers.dev` 주소는 꺼졌습니다. 아래 배포 항목을 보세요.
 
 ## 실행
 
@@ -62,6 +64,10 @@ npx wrangler secret put ADMIN_PASSWORD --config dist/server/wrangler.json
 npm run build && npx wrangler deploy --config dist/server/wrangler.json
 ```
 
+커스텀 도메인은 `.env` 의 `CF_CUSTOM_DOMAINS` 에 쉼표로 적습니다. 해당 도메인이 이 Cloudflare 계정의 영역(zone)으로 들어와 있으면 배포할 때 DNS 와 인증서까지 알아서 잡힙니다.
+
+**이 값을 넣으면 `*.workers.dev` 주소는 꺼집니다.** wrangler 가 라우트를 가진 배포에서는 `workers_dev` 를 기본으로 끄기 때문입니다. 버전별 미리보기 주소(`preview_urls`)도 같이 꺼집니다. 둘 다 살리고 싶으면 설정에 `workers_dev: true` 를 명시해야 합니다.
+
 운영 중인 D1 은 `wrangler` 로 직접 들여다볼 수 있습니다.
 
 ```bash
@@ -91,7 +97,7 @@ npx wrangler d1 execute wolyung-saju --remote --config dist/server/wrangler.json
 - 관리자 신청서 조회·파기 화면 (`/admin`, 비밀번호 로그인, 100건씩 쪽 넘김)
 - 신청서 전체 CSV 내보내기 (`/admin` 의 `CSV 내보내기`)
 - 스팸 방어 (IP 기준 시간당 제출 제한 + 허니팟)
-- 공개 Sites 배포
+- 자체 도메인(`wolyungdang.com`)으로 Cloudflare Workers 배포
 
 ## 아직 미구현
 
